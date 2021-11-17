@@ -8,7 +8,9 @@
 import UIKit
 
 class LoginViewController: UIViewController {
-
+    
+    var delegate: UserAuthenticatedDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -23,43 +25,78 @@ class LoginViewController: UIViewController {
     let bottomText = CustomLabel(text: "Don't have an Account?", color: ColorConstants.tealGreen, font: FontConstants.normal1)
     let signUpButton = CustomButton(title: "Sign Up", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold2, cornerRadius: 0)
     
-    let signUp: UIButton = {
-        let button = UIButton()
-        button.attributedTitle(firstPart: "Don't have an Account?", secondPart: "Sign Up")
-        return button
+    let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.tealGreen)
+    let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.tealGreen)
+    
+    lazy var emailContainer: InputFieldView = {
+        emailTextField.keyboardType = .emailAddress
+        return InputFieldView(image: ImageConstants.mail!, color: ColorConstants.tealGreen, textField: emailTextField)
     }()
-//    let appTopView = LoginTopContainerView()
     
-    let emailText = CustomTextField(placeholder: "Email Address", color: ColorConstants.tealGreen)
-    let passwordText = CustomTextField(placeholder: "Password", color: ColorConstants.tealGreen)
-    
-//    addSubview(textField)
-    lazy var emailField = InputFieldView(image: ImageConstants.mail!, color: ColorConstants.tealGreen, textField: emailText)
-    lazy var passwordField = InputFieldView(image: ImageConstants.mail!, color: ColorConstants.tealGreen, textField: passwordText)
+    lazy var passwordContainer: InputFieldView = {
+        passwordTextField.isSecureTextEntry = true
+        passwordTextField.keyboardType = .default
+        return InputFieldView(image: ImageConstants.password!, color: ColorConstants.tealGreen, textField: passwordTextField)
+    }()
     
     let loginButton = CustomButton(title: "Login", color: ColorConstants.darkTealGreen, textColor: .white, font: FontConstants.bold1, cornerRadius: 25)
     
     @objc func navigateSignUp() {
         let signUpVC = SignUpViewController()
-        signUpVC.modalPresentationStyle = .fullScreen
-        present(signUpVC, animated: true, completion: nil)
+        signUpVC.delegate = delegate
+        navigationController?.pushViewController(signUpVC, animated: true)
     }
     
-    func configureNotificationObserver() {
-        emailText.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
-        passwordText.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+    @objc func handleLogin() {
+        guard let email = emailTextField.text else { return }
+        guard let password = passwordTextField.text else { return }
+        
+        let fieldError = validateLogin(email: email, password: password)
+        
+        if fieldError != nil {
+            showAlert(title: "Invalid", message: fieldError!)
+        } else {
+            NetworkManager.shared.login(withEmail: email, password: password) { [weak self] result, error in
+                guard let self = self else { return }
+                
+                if error != nil {
+                    self.showAlert(title: "Failed", message: error!.localizedDescription)
+                } else {
+                    self.delegate?.userAuthenticated()
+                    self.dismiss(animated: true, completion: nil)
+                }
+            }
+        }
     }
     
     @objc func textDidChange(sender: UITextField) {
-        if sender == emailText {
-            emailField.layer.borderWidth = (emailText.text?.isEmpty)! ? 0 : 1
+        if sender == emailTextField {
+            emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+        }
+        if sender == passwordTextField {
+            passwordContainer.layer.borderColor = passwordValidation(password: passwordTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
         }
     }
-
+    
+    func configureNotificationObserver() {
+        emailTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        passwordTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+    }
+    
+    func validateLogin(email: String, password: String) -> String? {
+        if email == "" || password == "" {
+            return email == "" ? "Please Enter Email" : "Please Enter Password"
+        }
+        if !emailValidation(email: email) || !passwordValidation(password: password) {
+            return emailValidation(email: email) ? MessageConstants.passwordInvalid : MessageConstants.emailInvalid
+        }
+        return nil
+    }
+    
     func configureUI() {
         
-        passwordText.isSecureTextEntry = true
-        signUp.addTarget(self, action: #selector(navigateSignUp), for: .touchUpInside)
+        signUpButton.addTarget(self, action: #selector(navigateSignUp), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
         loginButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         let topStack = UIStackView(arrangedSubviews: [appImage, appLabel])
@@ -67,18 +104,15 @@ class LoginViewController: UIViewController {
         topStack.axis = .vertical
         topStack.alignment = .center
         
-        let inputFieldStack = UIStackView(arrangedSubviews: [emailField, passwordField, loginButton])
+        let inputFieldStack = UIStackView(arrangedSubviews: [emailContainer, passwordContainer, loginButton])
         inputFieldStack.axis = .vertical
         inputFieldStack.spacing = 20
-//        inputFields.distribution = .fill
-//        inputFieldStack.backgroundColor = .red
         
-        let bottomStack = UIStackView(arrangedSubviews: [signUp])
+        let bottomStack = UIStackView(arrangedSubviews: [bottomText, signUpButton])
         bottomStack.axis = .horizontal
         bottomStack.spacing = 5
         bottomStack.distribution = .fill
-//        bottomStack.alignment = .center
-
+        
         view.addSubview(topStack)
         view.addSubview(inputFieldStack)
         view.addSubview(bottomStack)
@@ -95,11 +129,11 @@ class LoginViewController: UIViewController {
             
             bottomStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             bottomStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-
+            
             inputFieldStack.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
             inputFieldStack.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
             inputFieldStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 30),
-
+            
         ])
     }
 }
