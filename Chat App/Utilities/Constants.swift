@@ -41,6 +41,10 @@ struct ImageConstants {
     static let menu = UIImage(systemName: "line.3.horizontal")
     static let add = UIImage(systemName: "plus")
     static let search = UIImage(systemName: "magnifyingglass")
+    static let back = UIImage(systemName: "chevron.backward")
+    static let send = UIImage(systemName: "arrowtriangle.right.fill")
+    static let round = UIImage(systemName: "circle")
+    static let roundFill = UIImage(systemName: "circle.fill")
     
 }
 

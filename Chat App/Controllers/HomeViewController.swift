@@ -11,8 +11,10 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     let cellIdentifier = "chatCell"
     
-    var chats: [ChatItem] = []
+    var chats: [Chats] = []
+    var currentUser: UserData?
     var collectionView: UICollectionView!
+    var editMode = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,37 +70,26 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     }
     
     func fetchUserData() {
+        chats = []
         let dateFormatter = DateFormatter()
         //        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
         dateFormatter.dateFormat = "hh:mm:a"
         
-//        chats = []
-        let chat1 = ChatItem.init(name: "Rahul", message: "Good Morning", time: dateFormatter.string(from: Date()))
-        let chat2 = ChatItem.init(name: "Gautham", message: "Hello", time: dateFormatter.string(from: Date()))
-        let chat3 = ChatItem.init(name: "Manoj", message: "Thank You", time: dateFormatter.string(from: Date()))
-        let chat4 = ChatItem.init(name: "Amogh", message: "ok", time: dateFormatter.string(from: Date()))
-        let chat5 = ChatItem.init(name: "Rakesh", message: "bye", time: dateFormatter.string(from: Date()))
-        
-        let chat6 = ChatItem.init(name: "Rahul", message: "Good Morning", time: dateFormatter.string(from: Date()))
-        let chat7 = ChatItem.init(name: "Gautham", message: "Hello", time: dateFormatter.string(from: Date()))
-        let chat8 = ChatItem.init(name: "Manoj", message: "Thank You", time: dateFormatter.string(from: Date()))
-        let chat9 = ChatItem.init(name: "Amogh", message: "ok", time: dateFormatter.string(from: Date()))
-        let chat10 = ChatItem.init(name: "Rakesh", message: "bye", time: dateFormatter.string(from: Date()))
-        
-        chats.append(chat1)
-        chats.append(chat2)
-        chats.append(chat3)
-        chats.append(chat4)
-        chats.append(chat5)
-        chats.append(chat6)
-        chats.append(chat7)
-        chats.append(chat8)
-        chats.append(chat9)
-        chats.append(chat10)
-        
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
+        NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { currentUser in
+            self.currentUser = currentUser
         }
+        NetworkManager.shared.fetchChats(uid: NetworkManager.shared.getUID()!) { chats in
+            print(chats)
+//            self.chats = []
+            self.chats = chats
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+        }
+        
+//        DispatchQueue.main.async {
+//            self.collectionView.reloadData()
+//        }
         
         NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { user in
             print(user)
@@ -108,12 +99,14 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     func configureUI() {
         navigationItem.backButtonTitle = ""
         navigationItem.title = "Chat App"
-        //        let logout = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
-        let menu = UIBarButtonItem(image: ImageConstants.menu, style: .plain, target: self, action: #selector(handleMenu))
-//        let add = UIBarButtonItem(image: ImageConstants.add, style: .plain, target: self, action: #selector(handleAdd))
         
+        let menu = UIBarButtonItem(image: ImageConstants.menu, style: .plain, target: self, action: #selector(handleMenu))
+
         navigationItem.rightBarButtonItems = [menu]
-//        navigationItem.leftBarButtonItems = [add]
+        
+        let edit = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(handleEdit))
+
+        navigationItem.leftBarButtonItems = [edit]
         
         view.addSubview(addButton)
         view.bringSubviewToFront(addButton)
@@ -134,7 +127,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         view.addSubview(collectionView)
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(ChatCell.self, forCellWithReuseIdentifier: cellIdentifier)
+        collectionView.register(UserCell.self, forCellWithReuseIdentifier: cellIdentifier)
     }
     
     func configureSideMenu() {
@@ -188,8 +181,14 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         }
     }
     
+    @objc func handleEdit() {
+        editMode = !editMode
+        collectionView.reloadData()
+    }
+    
     @objc func handleAdd() {
         let addVC = AddChatViewController()
+        addVC.currentUser = currentUser
         navigationController?.pushViewController(addVC, animated: true)
     }
     
@@ -216,42 +215,62 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
 
 extension HomeViewController: UserAuthenticatedDelegate {
     func userAuthenticated() {
+        configureCollectionView()
         fetchUserData()
         configureUI()
         configureNavigationBar()
-        configureCollectionView()
         configureSideMenu()
     }
 }
 
 extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("5")
         return chats.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! UserCell
         
         let chat = chats[indexPath.row]
         
-        cell.nameLabel.text = chat.name
-        cell.messageLabel.text = chat.message
-        cell.dateLabel.text = chat.time
-//        let dateFormatter = DateFormatter()
+        let otherUser = chat.users[chat.otherUser!]
+        
+//        cell.selectButton.isHidden = !editMode
+        cell.animateView(open: editMode)
+        
+        cell.nameLabel.text = otherUser.username
+        cell.messageLabel.text = chat.lastMessage?.content
+        
+        let dateFormatter = DateFormatter()
 //        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
-//        dateFormatter.dateFormat = "hh:mm:a"
-//
-//        cell.nameLabel.text = "Name"
-//        cell.messageLabel.text = "Message"
-//        cell.profileImage.image = UIImage(systemName: "person.fill")
-//        cell.dateLabel.text = dateFormatter.string(from: Date())
+        dateFormatter.dateFormat = "hh:mm:a"
+
+        if chat.lastMessage == nil {
+            cell.dateLabel.isHidden = true
+        } else {
+            cell.dateLabel.isHidden = false
+            cell.dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
+        }
+        var fetchUser: UserData
+        
+        if chat.otherUser == 0 {
+            fetchUser = chat.users[0]
+        } else {
+            fetchUser = chat.users[1]
+        }
+        
+        NetworkManager.shared.downloadImage(url: fetchUser.profileURL) { image in
+            cell.profileImage.image = image
+        }
+        
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let chatVC = ChatViewController()
         chatVC.chat = chats[indexPath.row]
+        view.sendSubviewToBack(menuView)
+        menuView.isHidden = true
         navigationController?.pushViewController(chatVC, animated: true)
     }
 }
