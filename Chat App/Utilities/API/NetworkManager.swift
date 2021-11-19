@@ -17,6 +17,14 @@ struct NetworkManager {
     private let database = Database.database().reference()
     private let storage = Storage.storage()
     
+    let databaseDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .long
+        formatter.locale = .current
+        return formatter
+    }()
+    
     func login(withEmail email: String, password: String, completion: AuthDataResultCallback?) {
         Auth.auth().signIn(withEmail: email, password: password,completion: completion)
     }
@@ -78,24 +86,54 @@ struct NetworkManager {
         userDictionary.append(user1.dictionary)
         userDictionary.append(user2.dictionary)
         let finalDic = ["users" : userDictionary]
-//        let finalDic = ["users": ]
-        
-//        let finalDictionary = ["users": [
-//            0: user1.dictionary, 1: user2.dictionary
-//        ]]
+
         database.child("Chats").child(id).setValue(finalDic)
     }
     
-    func fetchChats(uid: String, completion: @escaping([Chats]) -> Void) {
-        var chats = [Chats]()
+    func fetchChats(uid: String, completion: @escaping([Chats]) -> Void) {        
         
         database.child("Chats").observe(.value) { snapshot in
+            var chats = [Chats]()
+            print("//////////////////////////")
             if let result = snapshot.value as? [String: [String: Any]] {
 //                print(result)
                 for key in result.values {
 //                   print(key)
+                var messagesArray: [Message] = []
+                    var lastMessage: Message?
+                    
                     let users = key["users"] as! [[String: Any]]
+                    let lastMessageDictionary = key["lastMessage"] as? [String: Any]
+                    let messagesDictionary = key["messages"] as? [[String: Any]]
 //                    print(users)
+                    if lastMessageDictionary != nil {
+                        for messageItem in messagesDictionary! {
+                            let sender = messageItem["sender"] as! String
+                            let content = messageItem["content"] as! String
+                            let timeString = messageItem["time"] as! String
+                            let seen = messageItem["seen"] as! Bool
+                            
+                            let time = databaseDateFormatter.date(from: timeString)
+                            
+                            let currentMessage = Message(sender: sender, content: content, time: time!, seen: seen)
+                            
+                            messagesArray.append(currentMessage)
+                        }
+                        
+                        let sender = lastMessageDictionary!["sender"] as! String
+                        let content = lastMessageDictionary!["content"] as! String
+                        let timeString = lastMessageDictionary!["time"] as! String
+                        let seen = lastMessageDictionary!["seen"] as! Bool
+                        
+                        let time = databaseDateFormatter.date(from: timeString)
+                        
+                        lastMessage = Message(sender: sender, content: content, time: time!, seen: seen)
+                        
+                    } else {
+                        messagesArray = []
+                        lastMessage = nil
+                    }
+                    
                     let user1 = users[0]
                     let user2 = users[1]
                     
@@ -120,7 +158,7 @@ struct NetworkManager {
                     } else {
                         otherUser = 0
                     }
-                    let chat = Chats(users: [firstUser, secondUser], lastMessage: nil, messages: [], otherUser: otherUser)
+                    let chat = Chats(users: [firstUser, secondUser], lastMessage: lastMessage, messages: messagesArray, otherUser: otherUser)
                     
                     if firstUser.uid == uid || secondUser.uid == uid {
                         chats.append(chat)
@@ -136,6 +174,33 @@ struct NetworkManager {
                 completion(chats)
             }
         }
+    }
+    
+    func fetchMessages() {
+        
+    }
+    
+    func addMessage(chat: Chats, id: String) {
+        
+        var currentChat = chat
+        
+        let dateString = databaseDateFormatter.string(from: currentChat.lastMessage!.time)
+        currentChat.lastMessage?.dateString = dateString
+        
+        let lastMessageDictionary = currentChat.lastMessage?.dictionary
+        var messagesDictionary: [[String: Any]] = []
+        
+        for var message in currentChat.messages! {
+            let dateString = databaseDateFormatter.string(from: message.time)
+            message.dateString = dateString
+            messagesDictionary.append(message.dictionary)
+        }
+//        userDictionary.append(user1.dictionary)
+//        userDictionary.append(user2.dictionary)
+        let finalDictionary = ["lastMessage": lastMessageDictionary!,
+                               "messages": messagesDictionary] as [String : Any]
+//        database.child("Chats").child(id).setValue(finalDictionary)
+        database.child("Chats").child(id).updateChildValues(finalDictionary)
     }
     
     func downloadImage(url: String, completion: @escaping(UIImage) -> Void) {

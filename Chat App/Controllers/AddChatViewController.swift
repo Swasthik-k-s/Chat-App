@@ -11,6 +11,7 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
     
     let cellIdentifier = "userCell"
     
+    var chats: [Chats] = []
     var users: [UserData] = []
     var currentUser: UserData?
     var collectionView: UICollectionView!
@@ -86,12 +87,29 @@ extension AddChatViewController: UICollectionViewDataSource {
         let users: [UserData] = [currentUser!, selectedUser]
         
         let id = "\(currentUser!.uid)_\(selectedUser.uid)"
-        
+        let chatVC = ChatViewController()
+        for chat in chats {
+            var currentChat = chat
+            let uid1 = chat.users[0].uid
+            let uid2 = chat.users[1].uid
+            
+            if uid1 == currentUser!.uid && uid2 == selectedUser.uid || uid1 == selectedUser.uid && uid2 == currentUser!.uid {
+                print("Already Chated")
+                
+                currentChat.otherUser =  uid1 == currentUser!.uid ? 1 : 0
+                chatVC.chat = currentChat
+                
+                navigationController?.pushViewController(chatVC, animated: true)
+                return
+            }
+            
+        }
+        print("New Chat")
         NetworkManager.shared.addChat(user1: currentUser!, user2: selectedUser, id: id)
-        let chat = ChatViewController()
-        chat.chat = Chats(users: users, lastMessage: nil, messages: [], otherUser: 1)
         
-        navigationController?.pushViewController(chat, animated: true)
+        chatVC.chat = Chats(users: users, lastMessage: nil, messages: [], otherUser: 1)
+        
+        navigationController?.pushViewController(chatVC, animated: true)
         
     }
 }

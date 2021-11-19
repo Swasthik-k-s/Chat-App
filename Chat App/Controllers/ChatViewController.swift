@@ -10,11 +10,12 @@ import UIKit
 class ChatViewController: UIViewController, UICollectionViewDelegate  {
     
     var chat: Chats!
-    var messages: [Message] = []
+//    var messages: [Message] = []
     let cellIdentifier = "chatCell"
     var collectionView: UICollectionView!
     var otherUser: UserData!
     var currentUser: UserData!
+    var chatId: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +40,8 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
     }()
     
     func configureUI() {
+        chatId = "\(chat.users[0].uid)_\(chat.users[1].uid)"
+        
         if chat.otherUser == 0 {
             otherUser = chat.users[0]
             currentUser = chat.users[1]
@@ -86,7 +89,11 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(MessageCell.self, forCellWithReuseIdentifier: cellIdentifier)
-        collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
+//        let width = collectionView.frame.width - 50
+        
+        
+        
+//        collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
     }
     
     @objc func handleProfile() {
@@ -96,8 +103,12 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
     @objc func handleSend() {
         if textField.text != "" {
             let newMessage = Message(sender: currentUser.uid, content: textField.text!, time: Date(), seen: false)
+            chat.messages?.append(newMessage)
+            chat.lastMessage = newMessage
+//            messages.append(newMessage)
             
-            messages.append(newMessage)
+            NetworkManager.shared.addMessage(chat: chat, id: chatId!)
+            
             textField.text = ""
             DispatchQueue.main.async {
                 self.collectionView.reloadData()
@@ -112,20 +123,26 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
 
 extension ChatViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return messages.count
+        return chat.messages!.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! MessageCell
         
-        let messageItem = messages[indexPath.row]
+        let messageItem = chat.messages![indexPath.row]
         
-        if messageItem.sender == currentUser.uid {
-            cell.sender = true
-        } else {
-            cell.sender = false
-        }
+//        if messageItem.sender == currentUser.uid {
+//            cell.sender = true
+//        } else {
+//            cell.sender = false
+//        }
+       
+        cell.senderUid = messageItem.sender
+        cell.currentUid = NetworkManager.shared.getUID()
+        
         cell.message.text = messageItem.content
+        
+        cell.checkSender()
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "hh:mm:a"
@@ -142,8 +159,28 @@ extension ChatViewController: UICollectionViewDataSource {
 extension ChatViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        if let chat = collectionView.dataSource?.collectionView(collectionView, cellForItemAt: indexPath) as? MessageCell {
+//            print("User Value\(chat)")
+//
+//            print(chat.message.text)
+            let size = CGSize(width: 110, height: 1000)
+    
+//        let estimatedFrame = NSString(string: chat.message!)
+    
+            let attribute = chat.message.frame.height
+//        let estimatedFrame = NSAttributedString(string: chat.message.text!, attributes: nil)
+            let estimatedFrame = NSString(string: chat.message.text!).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: [:], context: nil)
+//            print(estimatedFrame.size)
+            
+            return CGSize(width: view.frame.width, height: estimatedFrame.height + 40)
+//
+        }
+      
         return CGSize(width: view.frame.width, height: 50)
+        
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 2
@@ -151,6 +188,7 @@ extension ChatViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
+        
     }
 }
 

@@ -8,3 +8,7 @@
 protocol UserAuthenticatedDelegate {
     func userAuthenticated()
 }
+
+protocol ChatSelectedDelegate {
+    func chatSelected(isSelected: Bool)
+}

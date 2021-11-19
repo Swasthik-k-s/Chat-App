@@ -12,5 +12,14 @@ struct Message {
     var content: String
     var time: Date
     var seen: Bool
+    var dateString: String?
     
+    var dictionary: [String: Any] {
+        return [
+            "sender": sender,
+            "content": content,
+            "time": dateString!,
+            "seen": seen
+        ]
+    }
 }

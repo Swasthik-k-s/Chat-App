@@ -15,6 +15,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     var currentUser: UserData?
     var collectionView: UICollectionView!
     var editMode = false
+    var initialFetch: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,7 +80,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             self.currentUser = currentUser
         }
         NetworkManager.shared.fetchChats(uid: NetworkManager.shared.getUID()!) { chats in
-            print(chats)
+//            print(chats)
 //            self.chats = []
             self.chats = chats
             DispatchQueue.main.async {
@@ -91,9 +92,9 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
 //            self.collectionView.reloadData()
 //        }
         
-        NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { user in
-            print(user)
-        }
+//        NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { user in
+//            print(user)
+//        }
     }
     
     func configureUI() {
@@ -183,12 +184,14 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @objc func handleEdit() {
         editMode = !editMode
+        initialFetch  = true
         collectionView.reloadData()
     }
     
     @objc func handleAdd() {
         let addVC = AddChatViewController()
         addVC.currentUser = currentUser
+        addVC.chats = chats
         navigationController?.pushViewController(addVC, animated: true)
     }
     
@@ -211,6 +214,10 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         
         showAlertWithCancel(title: "Logout", message: "Are you Sure", buttonText: "Logout", buttonAction: logout)
     }
+    
+    @objc func handleSelect() {
+        print("Select")
+    }
 }
 
 extension HomeViewController: UserAuthenticatedDelegate {
@@ -221,6 +228,16 @@ extension HomeViewController: UserAuthenticatedDelegate {
         configureNavigationBar()
         configureSideMenu()
     }
+}
+
+extension HomeViewController: ChatSelectedDelegate {
+    func chatSelected(isSelected: Bool) {
+        print("Selected\(isSelected)")
+    }
+    
+    
+    
+    
 }
 
 extension HomeViewController: UICollectionViewDataSource {
@@ -235,11 +252,13 @@ extension HomeViewController: UICollectionViewDataSource {
         
         let otherUser = chat.users[chat.otherUser!]
         
-//        cell.selectButton.isHidden = !editMode
+        
         cell.animateView(open: editMode)
         
         cell.nameLabel.text = otherUser.username
         cell.messageLabel.text = chat.lastMessage?.content
+//        cell.selectButton.addTarget(self, action: #selector(handleSelect), for: .touchUpInside)
+//        cell.selected(isSelect: Bool.random())
         
         let dateFormatter = DateFormatter()
 //        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
@@ -259,9 +278,17 @@ extension HomeViewController: UICollectionViewDataSource {
             fetchUser = chat.users[1]
         }
         
-        NetworkManager.shared.downloadImage(url: fetchUser.profileURL) { image in
-            cell.profileImage.image = image
+//        NetworkManager.shared.downloadImage(url: fetchUser.profileURL) { image in
+//            cell.profileImage.image = image
+//        }
+        
+        if !initialFetch {
+            NetworkManager.shared.downloadImageWithPath(path: "Profile/\(fetchUser.uid)") { image in
+                cell.profileImage.image = image
+            }
         }
+        
+        
         
         return cell
     }
