@@ -8,10 +8,12 @@
 import Foundation
 
 struct Chats {
+    var chatId: String?
     var users: [UserData]
     var lastMessage: Message?
     var messages: [Message]?
     var otherUser: Int?
+    var unSeenCount: Int?
     
 //    var userDictionary: {
 //        return [

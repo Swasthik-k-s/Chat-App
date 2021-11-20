@@ -252,7 +252,7 @@ extension HomeViewController: UICollectionViewDataSource {
         
         let otherUser = chat.users[chat.otherUser!]
         
-        
+        print(chat.chatId)
         cell.animateView(open: editMode)
         
         cell.nameLabel.text = otherUser.username

@@ -9,7 +9,7 @@ import UIKit
 
 class UserCell: UICollectionViewCell {
     
-    var delegate: ChatSelectedDelegate!
+    var delegate: ChatSelectedDelegate?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -126,9 +126,9 @@ class UserCell: UICollectionViewCell {
 //            editView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
             selectButton.leftAnchor.constraint(equalTo: self.leftAnchor, constant: -20),
-//            selectButton.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            selectButton.topAnchor.constraint(equalTo: self.topAnchor),
-            selectButton.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            selectButton.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+//            selectButton.topAnchor.constraint(equalTo: self.topAnchor),
+//            selectButton.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
             profileImage.leftAnchor.constraint(equalTo: selectButton.rightAnchor, constant: 10),
             profileImage.centerYAnchor.constraint(equalTo: self.centerYAnchor),
@@ -146,7 +146,7 @@ class UserCell: UICollectionViewCell {
     @objc func handleSelect(sender: UIButton) {
 //        print("Selected")
         select = !select
-        delegate.chatSelected(isSelected: select)
+        delegate?.chatSelected(isSelected: select)
         if select {
             selectButton.setImage(ImageConstants.roundFill, for: .normal)
         } else {

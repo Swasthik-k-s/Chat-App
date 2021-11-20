@@ -90,21 +90,22 @@ struct NetworkManager {
         database.child("Chats").child(id).setValue(finalDic)
     }
     
-    func fetchChats(uid: String, completion: @escaping([Chats]) -> Void) {        
+    func fetchChats(uid: String, completion: @escaping([Chats]) -> Void) {
         
         database.child("Chats").observe(.value) { snapshot in
             var chats = [Chats]()
             print("//////////////////////////")
             if let result = snapshot.value as? [String: [String: Any]] {
 //                print(result)
-                for key in result.values {
-//                   print(key)
-                var messagesArray: [Message] = []
+                for key in result.keys {
+//                   print(keys)
+                    let value = result[key]!
+                    var messagesArray: [Message] = []
                     var lastMessage: Message?
                     
-                    let users = key["users"] as! [[String: Any]]
-                    let lastMessageDictionary = key["lastMessage"] as? [String: Any]
-                    let messagesDictionary = key["messages"] as? [[String: Any]]
+                    let users = value["users"] as! [[String: Any]]
+                    let lastMessageDictionary = value["lastMessage"] as? [String: Any]
+                    let messagesDictionary = value["messages"] as? [[String: Any]]
 //                    print(users)
                     if lastMessageDictionary != nil {
                         for messageItem in messagesDictionary! {
@@ -158,26 +159,33 @@ struct NetworkManager {
                     } else {
                         otherUser = 0
                     }
-                    let chat = Chats(users: [firstUser, secondUser], lastMessage: lastMessage, messages: messagesArray, otherUser: otherUser)
+                    let id = key
+                    
+                    let chat = Chats(chatId: id, users: [firstUser, secondUser], lastMessage: lastMessage, messages: messagesArray, otherUser: otherUser)
                     
                     if firstUser.uid == uid || secondUser.uid == uid {
                         chats.append(chat)
                     }
-                    
-                    print(chat)
-                                    
-//                    let user1 = chat[0]
-                    
-//                    let users = result["users"] as! [String: Any]
-//                    print("Users\(users)")
                 }
                 completion(chats)
             }
         }
     }
     
-    func fetchMessages() {
-        
+    func fetchMessages(chatId: String, completion: @escaping([Message]) -> Void) {
+        database.child("Chats").child("\(chatId)/messages").observe(.value) { snapshot in
+            var resultArray: [Message] = []
+            
+            if let result = snapshot.value as? [[String: Any]] {
+//                print("Result\(result)")
+                for message in result {
+//                    print("Messages\(message)")
+                    resultArray.append(createMessageObject(dictionary: message))
+                }
+                
+                completion(resultArray)
+            }
+        }
     }
     
     func addMessage(chat: Chats, id: String) {
@@ -238,5 +246,16 @@ struct NetworkManager {
             print("Error signing out: %@", signOutError)
         }
         return false
+    }
+    
+    func createMessageObject(dictionary: [String: Any]) -> Message {
+        let sender = dictionary["sender"] as! String
+        let content = dictionary["content"] as! String
+        let timeString = dictionary["time"] as! String
+        let seen = dictionary["seen"] as! Bool
+        
+        let time = databaseDateFormatter.date(from: timeString)
+        
+        return Message(sender: sender, content: content, time: time!, seen: seen)
     }
 }

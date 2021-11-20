@@ -12,6 +12,7 @@ struct ColorConstants {
     
     static let lightGreen = UIColor(red: 37/255.0, green: 211/255.0, blue: 102/255.0, alpha: 1.0)
     static let tealGreen = UIColor(red: 18/255.0, green: 140/255.0, blue: 126/255.0, alpha: 1.0)
+    static let dimTealGreen = UIColor(red: 18/255.0, green: 140/255.0, blue: 126/255.0, alpha: 0.1)
     static let darkTealGreen = UIColor(red: 7/255.0, green: 94/255.0, blue: 84/255.0, alpha: 1.0)
     static let blue = UIColor(red: 52/255.0, green: 183/255.0, blue: 241/255.0, alpha: 1.0)
     static let customWhite = UIColor(red: 236/255.0, green: 229/255.0, blue: 221/255.0, alpha: 1.0)

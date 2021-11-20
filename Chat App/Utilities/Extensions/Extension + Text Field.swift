@@ -21,3 +21,12 @@ extension CustomTextField {
         self.rightViewMode = .always
     }
 }
+
+extension UITextView {
+    
+    
+    func centerVertical() {
+        
+    }
+}
+

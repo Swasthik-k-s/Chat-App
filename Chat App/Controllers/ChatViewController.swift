@@ -7,39 +7,69 @@
 
 import UIKit
 
-class ChatViewController: UIViewController, UICollectionViewDelegate  {
+class ChatViewController: UITableViewController, UITextViewDelegate {
     
     var chat: Chats!
-//    var messages: [Message] = []
+    var messages: [Message] = []
     let cellIdentifier = "chatCell"
     var collectionView: UICollectionView!
     var otherUser: UserData!
     var currentUser: UserData!
     var chatId: String?
     
+//    var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureNavigationBar()
-        configureCollectionView()
+//        configureCollectionView()
+        configureTableView()
+        fetchChats()
         configureUI()
+        
         
         // Do any additional setup after loading the view.
     }
     
-    let textField = CustomTextField(placeholder: "Message", color: ColorConstants.tealGreen)
+//    let textField = CustomTextField(placeholder: "Message", color: ColorConstants.tealGreen)
+    let textField: UITextView = {
+        let field = UITextView()
+        field.text = "Message"
+        field.textColor = ColorConstants.dimTealGreen
+//        field.textContainer.size = CGSize(width: 100, height: 40)
+//        field.contentInset = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
+        field.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        field.font = FontConstants.normal2
+//        field.textAlignment = .center
+        return field
+    }()
     
     let sendButton: UIButton = {
         let button = UIButton()
         button.setImage(ImageConstants.send, for: .normal)
         button.tintColor = ColorConstants.white
-        button.backgroundColor = ColorConstants.tealGreen
+        button.backgroundColor = ColorConstants.darkTealGreen
         button.layer.cornerRadius = 25
         return button
         
         
     }()
     
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.textColor == ColorConstants.dimTealGreen {
+            textView.text = ""
+            textView.textColor = ColorConstants.tealGreen
+        } else {
+            if textView.text == "" {
+                textView.text = "Message"
+                textView.textColor = ColorConstants.dimTealGreen
+            }
+        }
+    }
+
     func configureUI() {
+        textField.delegate = self
+        view.backgroundColor = ColorConstants.customWhite
         chatId = "\(chat.users[0].uid)_\(chat.users[1].uid)"
         
         if chat.otherUser == 0 {
@@ -50,16 +80,15 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
             currentUser = chat.users[0]
         }
         
-        view.backgroundColor = .white
+//        view.backgroundColor = .white
         
         navigationItem.title = otherUser.username
         navigationItem.backButtonTitle = ""
         
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
         textField.layer.cornerRadius = 25
-        textField.leftPadding(value: 10)
-        textField.rightPadding(value: 10)
-        textField.backgroundColor = ColorConstants.customWhite
+
+        textField.backgroundColor = ColorConstants.white
         
         view.addSubview(textField)
         view.addSubview(sendButton)
@@ -70,30 +99,39 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
         NSLayoutConstraint.activate([
             
             textField.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 5),
-            textField.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
+            textField.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0),
             textField.heightAnchor.constraint(equalToConstant: 50),
+            textField.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -70),
             
             sendButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -5),
             sendButton.heightAnchor.constraint(equalToConstant: 50),
             sendButton.widthAnchor.constraint(equalToConstant: 50),
-            sendButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
-            textField.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: -5)
+            sendButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0),
+            textField.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: -5),
+  
             
         ])
     }
     
-    func configureCollectionView() {
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: UICollectionViewFlowLayout())
-        
-        view.addSubview(collectionView)
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.register(MessageCell.self, forCellWithReuseIdentifier: cellIdentifier)
-//        let width = collectionView.frame.width - 50
-        
-        
-        
-//        collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
+    func fetchChats() {
+        messages = []
+        NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
+            print("Messages\(messages)")
+            self.messages = messages
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+    }
+    
+    func configureTableView() {
+
+//        tableView = UITableView(frame: view.bounds)
+//        tableView.dataSource = self
+//        tableView.delegate = self
+        tableView.separatorStyle = .none
+        tableView.register(MessageTableCell.self, forCellReuseIdentifier: cellIdentifier)
     }
     
     @objc func handleProfile() {
@@ -110,8 +148,10 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
             NetworkManager.shared.addMessage(chat: chat, id: chatId!)
             
             textField.text = ""
+//            textViewDidEndEditing(textField)
             DispatchQueue.main.async {
-                self.collectionView.reloadData()
+                self.tableView.reloadData()
+//                self.collectionView.reloadData()
             }
         }
     }
@@ -119,29 +159,22 @@ class ChatViewController: UIViewController, UICollectionViewDelegate  {
     @objc func handleBack() {
         navigationController?.popViewController(animated: true)
     }
-}
-
-extension ChatViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return chat.messages!.count
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        print(chat.messages!.count)
+//        return chat.messages!.count
+        return messages.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! MessageCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! MessageTableCell
         
-        let messageItem = chat.messages![indexPath.row]
-        
-//        if messageItem.sender == currentUser.uid {
-//            cell.sender = true
-//        } else {
-//            cell.sender = false
-//        }
+        let messageItem = messages[indexPath.row]
        
         cell.senderUid = messageItem.sender
         cell.currentUid = NetworkManager.shared.getUID()
-        
         cell.message.text = messageItem.content
-        
+        cell.backgroundColor = ColorConstants.customWhite
         cell.checkSender()
         
         let dateFormatter = DateFormatter()
@@ -151,44 +184,7 @@ extension ChatViewController: UICollectionViewDataSource {
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
-
-extension ChatViewController: UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        if let chat = collectionView.dataSource?.collectionView(collectionView, cellForItemAt: indexPath) as? MessageCell {
-//            print("User Value\(chat)")
-//
-//            print(chat.message.text)
-            let size = CGSize(width: 110, height: 1000)
-    
-//        let estimatedFrame = NSString(string: chat.message!)
-    
-            let attribute = chat.message.frame.height
-//        let estimatedFrame = NSAttributedString(string: chat.message.text!, attributes: nil)
-            let estimatedFrame = NSString(string: chat.message.text!).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: [:], context: nil)
-//            print(estimatedFrame.size)
-            
-            return CGSize(width: view.frame.width, height: estimatedFrame.height + 40)
-//
-        }
-      
-        return CGSize(width: view.frame.width, height: 50)
-        
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-        
-    }
-}
-

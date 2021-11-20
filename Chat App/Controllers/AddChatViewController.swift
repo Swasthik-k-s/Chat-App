@@ -107,7 +107,7 @@ extension AddChatViewController: UICollectionViewDataSource {
         print("New Chat")
         NetworkManager.shared.addChat(user1: currentUser!, user2: selectedUser, id: id)
         
-        chatVC.chat = Chats(users: users, lastMessage: nil, messages: [], otherUser: 1)
+        chatVC.chat = Chats(chatId: id, users: users, lastMessage: nil, messages: [], otherUser: 1)
         
         navigationController?.pushViewController(chatVC, animated: true)
         
