@@ -38,8 +38,9 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         field.textColor = ColorConstants.dimTealGreen
 //        field.textContainer.size = CGSize(width: 100, height: 40)
 //        field.contentInset = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
-        field.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        field.textContainerInset = UIEdgeInsets(top: 14, left: 10, bottom: 14, right: 10)
         field.font = FontConstants.normal2
+        field.centerVertical()
 //        field.textAlignment = .center
         return field
     }()
@@ -68,6 +69,10 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
 
     func configureUI() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(sender:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
         textField.delegate = self
         view.backgroundColor = ColorConstants.customWhite
         chatId = "\(chat.users[0].uid)_\(chat.users[1].uid)"
@@ -108,15 +113,22 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
             sendButton.widthAnchor.constraint(equalToConstant: 50),
             sendButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0),
             textField.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: -5),
-  
             
         ])
+    }
+    
+    @objc func keyboardWillShow(sender: NSNotification) {
+        self.view.frame.origin.y = -335
+    }
+    
+    @objc func keyboardWillHide(sender: NSNotification) {
+        self.view.frame.origin.y = 0
     }
     
     func fetchChats() {
         messages = []
         NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
-            print("Messages\(messages)")
+//            print("Messages\(messages)")
             self.messages = messages
             
             DispatchQueue.main.async {
@@ -141,18 +153,19 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     @objc func handleSend() {
         if textField.text != "" {
             let newMessage = Message(sender: currentUser.uid, content: textField.text!, time: Date(), seen: false)
-            chat.messages?.append(newMessage)
-            chat.lastMessage = newMessage
+//            messages.append(newMessage)
+            var messagesArray = messages
+            messagesArray.append(newMessage)
 //            messages.append(newMessage)
             
-            NetworkManager.shared.addMessage(chat: chat, id: chatId!)
+            NetworkManager.shared.addMessage(messages: messagesArray, lastMessage: newMessage, id: chatId!)
             
             textField.text = ""
 //            textViewDidEndEditing(textField)
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-//                self.collectionView.reloadData()
-            }
+//            DispatchQueue.main.async {
+//                self.tableView.reloadData()
+////                self.collectionView.reloadData()
+//            }
         }
     }
     
@@ -161,26 +174,26 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        print(chat.messages!.count)
-//        return chat.messages!.count
         return messages.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! MessageTableCell
         
-        let messageItem = messages[indexPath.row]
+//        let messageItem =
        
-        cell.senderUid = messageItem.sender
-        cell.currentUid = NetworkManager.shared.getUID()
-        cell.message.text = messageItem.content
+        cell.messageItem = messages[indexPath.row]
+        
+//        cell.senderUid = messageItem.sender
+//        cell.currentUid = NetworkManager.shared.getUID()
+//        cell.message.text = messageItem.content
         cell.backgroundColor = ColorConstants.customWhite
-        cell.checkSender()
+//        cell.checkSender()
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "hh:mm:a"
-        
-        cell.time.text = dateFormatter.string(from: messageItem.time)
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "hh:mm:a"
+//
+//        cell.time.text = dateFormatter.string(from: messageItem.time)
         return cell
     }
     

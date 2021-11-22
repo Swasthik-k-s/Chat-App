@@ -94,9 +94,12 @@ struct NetworkManager {
         
         database.child("Chats").observe(.value) { snapshot in
             var chats = [Chats]()
-            print("//////////////////////////")
+//            print("//////////////////////////")
             if let result = snapshot.value as? [String: [String: Any]] {
 //                print(result)
+                
+//                let sortedChatsKey = result.keys.sorted()
+                
                 for key in result.keys {
 //                   print(keys)
                     let value = result[key]!
@@ -108,18 +111,18 @@ struct NetworkManager {
                     let messagesDictionary = value["messages"] as? [[String: Any]]
 //                    print(users)
                     if lastMessageDictionary != nil {
-                        for messageItem in messagesDictionary! {
-                            let sender = messageItem["sender"] as! String
-                            let content = messageItem["content"] as! String
-                            let timeString = messageItem["time"] as! String
-                            let seen = messageItem["seen"] as! Bool
-                            
-                            let time = databaseDateFormatter.date(from: timeString)
-                            
-                            let currentMessage = Message(sender: sender, content: content, time: time!, seen: seen)
-                            
-                            messagesArray.append(currentMessage)
-                        }
+//                        for messageItem in messagesDictionary! {
+//                            let sender = messageItem["sender"] as! String
+//                            let content = messageItem["content"] as! String
+//                            let timeString = messageItem["time"] as! String
+//                            let seen = messageItem["seen"] as! Bool
+//
+//                            let time = databaseDateFormatter.date(from: timeString)
+//
+//                            let currentMessage = Message(sender: sender, content: content, time: time!, seen: seen)
+//
+//                            messagesArray.append(currentMessage)
+//                        }
                         
                         let sender = lastMessageDictionary!["sender"] as! String
                         let content = lastMessageDictionary!["content"] as! String
@@ -161,13 +164,14 @@ struct NetworkManager {
                     }
                     let id = key
                     
-                    let chat = Chats(chatId: id, users: [firstUser, secondUser], lastMessage: lastMessage, messages: messagesArray, otherUser: otherUser)
+                    let chat = Chats(chatId: id, users: [firstUser, secondUser], lastMessage: lastMessage, messages: [], otherUser: otherUser)
                     
                     if firstUser.uid == uid || secondUser.uid == uid {
                         chats.append(chat)
                     }
                 }
-                completion(chats)
+                let sortedChats = chats.sorted()
+                completion(sortedChats)
             }
         }
     }
@@ -175,12 +179,15 @@ struct NetworkManager {
     func fetchMessages(chatId: String, completion: @escaping([Message]) -> Void) {
         database.child("Chats").child("\(chatId)/messages").observe(.value) { snapshot in
             var resultArray: [Message] = []
-            
-            if let result = snapshot.value as? [[String: Any]] {
+            print("Messages\(snapshot.value)")
+            if let result = snapshot.value as? [String: [String: Any]] {
 //                print("Result\(result)")
-                for message in result {
+                
+                let sortedKeyArray = result.keys.sorted()
+                for id in sortedKeyArray {
 //                    print("Messages\(message)")
-                    resultArray.append(createMessageObject(dictionary: message))
+                    let message = result[id]!
+                    resultArray.append(createMessageObject(dictionary: message , id: id))
                 }
                 
                 completion(resultArray)
@@ -188,27 +195,29 @@ struct NetworkManager {
         }
     }
     
-    func addMessage(chat: Chats, id: String) {
+    func addMessage(messages: [Message], lastMessage: Message, id: String) {
         
-        var currentChat = chat
+//        var currentChat = chat
+        var lastMessageItem = lastMessage
         
-        let dateString = databaseDateFormatter.string(from: currentChat.lastMessage!.time)
-        currentChat.lastMessage?.dateString = dateString
+        let dateString = databaseDateFormatter.string(from: lastMessageItem.time)
+        lastMessageItem.dateString = dateString
         
-        let lastMessageDictionary = currentChat.lastMessage?.dictionary
+        let lastMessageDictionary = lastMessageItem.dictionary
         var messagesDictionary: [[String: Any]] = []
         
-        for var message in currentChat.messages! {
+        for var message in messages {
             let dateString = databaseDateFormatter.string(from: message.time)
             message.dateString = dateString
             messagesDictionary.append(message.dictionary)
         }
 //        userDictionary.append(user1.dictionary)
 //        userDictionary.append(user2.dictionary)
-        let finalDictionary = ["lastMessage": lastMessageDictionary!,
-                               "messages": messagesDictionary] as [String : Any]
+        let finalDictionary = ["lastMessage": lastMessageDictionary]
+                               
 //        database.child("Chats").child(id).setValue(finalDictionary)
         database.child("Chats").child(id).updateChildValues(finalDictionary)
+        database.child("Chats").child(id).child("messages").childByAutoId().setValue(lastMessageDictionary)
     }
     
     func downloadImage(url: String, completion: @escaping(UIImage) -> Void) {
@@ -248,7 +257,7 @@ struct NetworkManager {
         return false
     }
     
-    func createMessageObject(dictionary: [String: Any]) -> Message {
+    func createMessageObject(dictionary: [String: Any], id: String) -> Message {
         let sender = dictionary["sender"] as! String
         let content = dictionary["content"] as! String
         let timeString = dictionary["time"] as! String
@@ -256,6 +265,6 @@ struct NetworkManager {
         
         let time = databaseDateFormatter.date(from: timeString)
         
-        return Message(sender: sender, content: content, time: time!, seen: seen)
+        return Message(sender: sender, content: content, time: time!, seen: seen, id: id)
     }
 }

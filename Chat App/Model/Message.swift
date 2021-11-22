@@ -13,6 +13,7 @@ struct Message {
     var time: Date
     var seen: Bool
     var dateString: String?
+    var id: String?
     
     var dictionary: [String: Any] {
         return [

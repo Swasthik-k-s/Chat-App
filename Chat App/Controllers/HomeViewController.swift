@@ -184,8 +184,18 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @objc func handleEdit() {
         editMode = !editMode
+//        if editMode {
+//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
+//                self.view.frame.origin.x = 62
+//            }, completion: nil)
+//        } else {
+//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
+//                self.view.frame.origin.x = 0
+//            },completion: nil)
+//        }
         initialFetch  = true
         collectionView.reloadData()
+        
     }
     
     @objc func handleAdd() {
@@ -256,7 +266,9 @@ extension HomeViewController: UICollectionViewDataSource {
         cell.animateView(open: editMode)
         
         cell.nameLabel.text = otherUser.username
-        cell.messageLabel.text = chat.lastMessage?.content
+//        cell.messageLabel.text = chat.lastMessage?.content
+        
+        cell.lastMessageItem = chat.lastMessage
 //        cell.selectButton.addTarget(self, action: #selector(handleSelect), for: .touchUpInside)
 //        cell.selected(isSelect: Bool.random())
         

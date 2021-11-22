@@ -8,110 +8,141 @@
 import UIKit
 
 class MessageTableCell: UITableViewCell {
-
-//    override func awakeFromNib() {
-//        super.awakeFromNib()
-//        // Initialization code
-//        print("okkkkk")
-//
-//    }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        print("okkk")
-        configureCell()
+    //    override func awakeFromNib() {
+    //        super.awakeFromNib()
+    //        // Initialization code
+    //        print("okkkkk")
+    //
+    //    }
+    var messageItem: Message? {
+        didSet {
+            configureCell()
+        }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-    
-//    override func setSelected(_ selected: Bool, animated: Bool) {
-//        super.setSelected(selected, animated: animated)
-//
-//
-//    }
-
     var messageView = UIView()
+    
+    let uid = NetworkManager.shared.getUID()
+    
+    var leftConstraint: NSLayoutConstraint!
+    var rightConstraint: NSLayoutConstraint!
     
     var message: UILabel = {
         let label = UILabel()
         label.text = ""
         label.textColor = ColorConstants.customWhite
         label.numberOfLines = 0
+        label.textColor = .white
+        label.textAlignment = .left
         return label
     }()
     
     var time = CustomLabel(text: "", color: ColorConstants.customWhite, font: FontConstants.small)
     
-    var sender: Bool?
-    var senderUid: String?
-    var currentUid: String?
-    
-    
     func configureCell() {
-//        message.backgroundColor = ColorConstants.tealGreen
-//        message.layer.cornerRadius = 30
-//        message.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        message.textAlignment = .left
-        message.numberOfLines = 0
-        messageView.backgroundColor = ColorConstants.tealGreen
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "hh:mm:a"
+        
+        message.text = messageItem!.content
+        time.text = dateFormatter.string(from: messageItem!.time)
+        
+        //        messageView.backgroundColor = ColorConstants.tealGreen
         messageView.layer.cornerRadius = 10
-
+        
         addSubview(messageView)
-        addSubview(time)
-        addSubview(message)
+        messageView.addSubview(time)
+        messageView.addSubview(message)
         messageView.translatesAutoresizingMaskIntoConstraints = false
         message.translatesAutoresizingMaskIntoConstraints = false
         time.translatesAutoresizingMaskIntoConstraints = false
         
         
-        NSLayoutConstraint.activate([
-            
-            messageView.widthAnchor.constraint(equalToConstant: 300),
-            messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-            messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
-            
-            message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
-            message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
-            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
-            
-            time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
-            time.centerYAnchor.constraint(equalTo: messageView.centerYAnchor),
-            time.widthAnchor.constraint(equalToConstant: 60),
-            
-            message.rightAnchor.constraint(equalTo: time.leftAnchor, constant: -10),
-            
-            
-        ])
-    }
-    
-    func checkSender() {
         
-        if senderUid == currentUid {
-            sender = true
-            messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
-//            messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = false
-//            messageView.widthAnchor.constraint(equalToConstant: 300).isActive = true
+        //        leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
+        //        leftConstraint.isActive = false
+        //
+        //        rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
+        //        rightConstraint.isActive = true
+        
+        leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
+        rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
+        
+        if messageItem?.sender == uid {
+            //            messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -10).isActive = true
+            leftConstraint.isActive = false
+            rightConstraint.isActive = true
+            
             messageView.backgroundColor = ColorConstants.tealGreen
-            message.textColor = .white
+            NSLayoutConstraint.activate([
+                
+                message.widthAnchor.constraint(lessThanOrEqualToConstant: 250),
+                messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
+                messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+                messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
+                
+                message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
+                message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
+                //            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+                
+                time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+                time.topAnchor.constraint(equalTo: message.bottomAnchor, constant: 5),
+                time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+                //            time.widthAnchor.constraint(equalToConstant: 60),
+                
+                
+                
+                message.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+                
+            ])
+            //            messageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = false
+            //            messageView.widthAnchor.constraint(equalToConstant: 300).isActive = true
+            
+            //            let sentImage: UIImageView = {
+            //                let sent = UIImageView()
+            //                sent.image = UIImage(systemName: "checkmark.circle")
+            //                sent.widthAnchor.constraint(equalToConstant: 20).isActive = true
+            //                sent.heightAnchor.constraint(equalToConstant: 20).isActive = true
+            //                sent.contentMode = .scaleAspectFit
+            //                sent.tintColor = messageItem?.seen == false ? ColorConstants.grey : ColorConstants.darkTealGreen
+            //                sent.image = messageItem?.seen == false ? ImageConstants.unseen : ImageConstants.seen
+            //                return sent
+            //            }()
+            
+            //            addSubview(sentImage)
+            //            sentImage.translatesAutoresizingMaskIntoConstraints = false
+            //            sentImage.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10).isActive = true
+            //            sentImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
+            
         } else {
-            sender = false
-            messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = true
-//            messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = false
-//            messageView.widthAnchor.constraint(equalToConstant: 300).isActive = true
+            rightConstraint.isActive = false
+            leftConstraint.isActive = true
+            //            messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = true
+            
             messageView.backgroundColor = ColorConstants.grey
-            message.textColor = .white
+            NSLayoutConstraint.activate([
+                
+                message.widthAnchor.constraint(lessThanOrEqualToConstant: 250),
+                messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
+                messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+                messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
+                
+                message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
+                message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
+                //            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+                
+                time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+                time.topAnchor.constraint(equalTo: message.bottomAnchor, constant: 5),
+                time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+                //            time.widthAnchor.constraint(equalToConstant: 60),
+                
+                
+                
+                message.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+                
+            ])
         }
         
-//        if sender! {
-//            
-//        } else {
-//            
-//        }
+        
     }
 }
