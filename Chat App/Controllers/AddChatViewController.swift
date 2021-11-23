@@ -16,11 +16,18 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
     var currentUser: UserData?
     var collectionView: UICollectionView!
     
+    var searchUsers: [UserData] = []
+    let searchController = UISearchController(searchResultsController: nil)
+    private var inSearchMode: Bool {
+        return !searchController.searchBar.text!.isEmpty
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureNavigationBar()
         configureCollectionView()
         configureUI()
+        configureSearch()
         fetchAllUser()
         
     }
@@ -30,9 +37,9 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         navigationItem.title = "Select User"
         navigationItem.backButtonTitle = ""
         
-        let search = UIBarButtonItem(image: ImageConstants.search, style: .plain, target: self, action: #selector(handleSearch))
-        
-        navigationItem.rightBarButtonItems = [search]
+//        let search = UIBarButtonItem(image: ImageConstants.search, style: .plain, target: self, action: #selector(handleSearch))
+//
+//        navigationItem.rightBarButtonItems = [search]
     }
     
     func configureCollectionView() {
@@ -44,8 +51,25 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         collectionView.register(UserCell.self, forCellWithReuseIdentifier: cellIdentifier)
     }
     
+    func configureSearch() {
+        searchController.loadViewIfNeeded()
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.enablesReturnKeyAutomatically = false
+        searchController.searchBar.returnKeyType = UIReturnKeyType.done
+        searchController.searchBar.tintColor = .white
+//        searchController.searchBar.barTintColor = .blue
+//        searchController.tabBarItem.badgeColor = .blue
+//        navigationItem.titleView?.tintColor = .red
+        self.navigationItem.searchController = searchController
+        self.navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+        searchController.searchBar.placeholder = "Search Users"
+    }
+    
     func fetchAllUser() {
-        NetworkManager.shared.fetchAllUsers(uid: NetworkManager.shared.getUID()!) { users in
+        NetworkManager.shared.fetchAllUsers() { users in
             self.users = users
             DispatchQueue.main.async {
                 self.collectionView.reloadData()
@@ -60,13 +84,13 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
 
 extension AddChatViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return users.count
+        return inSearchMode ? searchUsers.count : users.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! UserCell
         
-        let user = users[indexPath.row]
+        let user = inSearchMode ? searchUsers[indexPath.row] : users[indexPath.row]
         
         cell.nameLabel.text = user.email
         cell.messageLabel.text = user.username
@@ -88,6 +112,9 @@ extension AddChatViewController: UICollectionViewDataSource {
         
         let id = "\(currentUser!.uid)_\(selectedUser.uid)"
         let chatVC = ChatViewController()
+        var vcArray = navigationController?.viewControllers
+        vcArray?.removeLast()
+        
         for chat in chats {
             var currentChat = chat
             let uid1 = chat.users[0].uid
@@ -99,7 +126,10 @@ extension AddChatViewController: UICollectionViewDataSource {
                 currentChat.otherUser =  uid1 == currentUser!.uid ? 1 : 0
                 chatVC.chat = currentChat
                 
-                navigationController?.pushViewController(chatVC, animated: true)
+                vcArray?.append(chatVC)
+                navigationController?.setViewControllers(vcArray!, animated: true)
+//                navigationController?.pushViewController(chatVC, animated: true)
+//                navigationController?.popViewController(animated: false)
                 return
             }
             
@@ -109,7 +139,10 @@ extension AddChatViewController: UICollectionViewDataSource {
         
         chatVC.chat = Chats(chatId: id, users: users, lastMessage: nil, messages: [], otherUser: 1)
         
-        navigationController?.pushViewController(chatVC, animated: true)
+        vcArray?.append(chatVC)
+        navigationController?.setViewControllers(vcArray!, animated: true)
+//        navigationController?.popViewController(animated: false)
+//        navigationController?.pushViewController(chatVC, animated: true)
         
     }
 }
@@ -127,3 +160,25 @@ extension AddChatViewController: UICollectionViewDelegateFlowLayout {
         return 0
     }
 }
+
+extension AddChatViewController: UISearchResultsUpdating, UISearchBarDelegate {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text!
+        
+        if inSearchMode {
+            searchUsers.removeAll()
+            
+            for user in users {
+                if user.username.lowercased().contains(searchText.lowercased()) || user.email.lowercased().contains(searchText.lowercased()) {
+                    searchUsers.append(user)
+                }
+            }
+        }
+        collectionView.reloadData()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        collectionView.reloadData()
+    }
+}
+

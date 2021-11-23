@@ -11,6 +11,11 @@ class UserCell: UICollectionViewCell {
     
     var delegate: ChatSelectedDelegate?
     let uid = NetworkManager.shared.getUID()
+    var chat: Chats? {
+        didSet {
+            configureChat()
+        }
+    }
     
     var lastMessageItem: Message? {
         didSet {
@@ -62,12 +67,40 @@ class UserCell: UICollectionViewCell {
     }()
 //    let infoStack = UIStackView(arrangedSubviews: [nameLabel, messageLabel])
     
+    func configureChat() {
+        guard let chat = chat else { return }
+        
+        let otherUser = chat.users[chat.otherUser!]
+        
+        nameLabel.text = otherUser.username
+        
+        lastMessageItem = chat.lastMessage
+        
+        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
+        dateFormatter.dateFormat = "hh:mm:a"
+
+//        var time = dateFormatter.string(from: chat.lastMessage!.time)
+        if chat.lastMessage == nil {
+            dateLabel.text = ""
+        } else {
+            dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
+        }
+        
+        NetworkManager.shared.downloadImageWithPath(path: "Profile/\(otherUser.uid)") { image in
+            DispatchQueue.main.async {
+                self.profileImage.image = image
+            }
+            
+        }
+        
+    }
     
     func animateView(open: Bool) {
         if open {
             selectButton.isHidden = false
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-                self.frame.origin.x = 62
+                self.frame.origin.x = 30
             }, completion: nil)
         } else {
             selectButton.isHidden = true
@@ -93,10 +126,7 @@ class UserCell: UICollectionViewCell {
     }
     
     func checkLastMessage() {
-        messageView.addSubview(messageLabel)
         messageLabel.text = lastMessageItem?.content
-        messageLabel.textAlignment = .left
-        messageLabel.widthAnchor.constraint(equalTo: infoStack.widthAnchor).isActive = true
 //        messageLabel.numberOfLines = 1
 //        print(lastMessageItem?.content)
         let sentImage = UIImageView()
@@ -163,7 +193,10 @@ class UserCell: UICollectionViewCell {
 //        editView.backgroundColor = .red
         
 //        insertSubview(editView, at: 0)
+        messageView.addSubview(messageLabel)
         
+        messageLabel.textAlignment = .left
+        messageLabel.widthAnchor.constraint(equalTo: infoStack.widthAnchor).isActive = true
         
 //        normalView.translatesAutoresizingMaskIntoConstraints = false
 //        editView.translatesAutoresizingMaskIntoConstraints = false
@@ -192,7 +225,7 @@ class UserCell: UICollectionViewCell {
 //            selectButton.topAnchor.constraint(equalTo: self.topAnchor),
 //            selectButton.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            profileImage.leftAnchor.constraint(equalTo: selectButton.rightAnchor, constant: 10),
+            profileImage.leftAnchor.constraint(equalTo: selectButton.rightAnchor, constant: 0),
             profileImage.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 //
             infoStack.centerYAnchor.constraint(equalTo: self.centerYAnchor),

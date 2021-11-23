@@ -26,7 +26,7 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         configureTableView()
         fetchChats()
         configureUI()
-        
+        setKeyboardObservers()
         
         // Do any additional setup after loading the view.
     }
@@ -69,9 +69,6 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
 
     func configureUI() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(sender:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         
         textField.delegate = self
         view.backgroundColor = ColorConstants.customWhite
@@ -117,23 +114,56 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         ])
     }
     
-    @objc func keyboardWillShow(sender: NSNotification) {
+//    lazy var inputContainerView: UIView = {
+//
+//        let containerView = UIView()
+//        containerView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 50)
+//        containerView.backgroundColor = .red
+//
+//        containerView.addSubview(textField)
+//        containerView.addSubview(sendButton)
+//
+//        containerView.translatesAutoresizingMaskIntoConstraints = false
+//
+//        NSLayoutConstraint.activate([
+//            sendButton.rightAnchor.constraint(equalTo: containerView.rightAnchor),
+//            textField.leftAnchor.constraint(equalTo: containerView.leftAnchor),
+//        ])
+//        return containerView
+//    }()
+    
+//    override var inputAccessoryView: UIView? {
+//        get {
+//            return inputContainerView
+//        }
+//    }
+    
+    func canBecomeFirstResponder() -> Bool {
+        return true
+    }
+    
+    func setKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+//        let keyboardFrame = notification.userInfo?[keyboardFrameEndUserInfoKey]?.cgRectValue()
         self.view.frame.origin.y = -335
     }
     
-    @objc func keyboardWillHide(sender: NSNotification) {
+    @objc func keyboardWillHide() {
         self.view.frame.origin.y = 0
     }
     
     func fetchChats() {
         messages = []
         NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
-//            print("Messages\(messages)")
+            //            print("Messages\(messages)")
             self.messages = messages
-            
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
+            self.tableView.reloadData()
+            self.tableView.scrollToRow(at: [0, messages.count - 1], at: .bottom, animated: false)
         }
     }
     
@@ -143,7 +173,9 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
 //        tableView.dataSource = self
 //        tableView.delegate = self
         tableView.separatorStyle = .none
+        
         tableView.register(MessageTableCell.self, forCellReuseIdentifier: cellIdentifier)
+        
     }
     
     @objc func handleProfile() {

@@ -53,8 +53,8 @@ struct NetworkManager {
         }
     }
     
-    func fetchAllUsers(uid: String, completion: @escaping([UserData]) -> Void) {
-        print("wdwewedwef")
+    func fetchAllUsers(completion: @escaping([UserData]) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         
         var users = [UserData]()
         

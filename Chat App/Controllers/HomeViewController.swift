@@ -259,46 +259,18 @@ extension HomeViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! UserCell
         
         let chat = chats[indexPath.row]
-        
-        let otherUser = chat.users[chat.otherUser!]
-        
-        print(chat.chatId)
+        cell.chat = chat
         cell.animateView(open: editMode)
         
-        cell.nameLabel.text = otherUser.username
-//        cell.messageLabel.text = chat.lastMessage?.content
-        
-        cell.lastMessageItem = chat.lastMessage
-//        cell.selectButton.addTarget(self, action: #selector(handleSelect), for: .touchUpInside)
-//        cell.selected(isSelect: Bool.random())
-        
-        let dateFormatter = DateFormatter()
-//        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
-        dateFormatter.dateFormat = "hh:mm:a"
-
-        if chat.lastMessage == nil {
-            cell.dateLabel.isHidden = true
-        } else {
-            cell.dateLabel.isHidden = false
-            cell.dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
-        }
-        var fetchUser: UserData
-        
-        if chat.otherUser == 0 {
-            fetchUser = chat.users[0]
-        } else {
-            fetchUser = chat.users[1]
-        }
+//        let otherUser = chat.users[chat.otherUser!]
         
 //        NetworkManager.shared.downloadImage(url: fetchUser.profileURL) { image in
 //            cell.profileImage.image = image
 //        }
         
-        if !initialFetch {
-            NetworkManager.shared.downloadImageWithPath(path: "Profile/\(fetchUser.uid)") { image in
-                cell.profileImage.image = image
-            }
-        }
+//        if !initialFetch {
+//
+//        }
         
         
         

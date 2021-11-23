@@ -17,13 +17,18 @@ class MessageTableCell: UITableViewCell {
     //    }
     var messageItem: Message? {
         didSet {
-            configureCell()
+            var isSender = true
+            guard let uid = NetworkManager.shared.getUID() else { return }
+            if uid != messageItem?.sender {
+                isSender = false
+            }
+            configureCell(isSender: isSender)
         }
     }
     
     var messageView = UIView()
     
-    let uid = NetworkManager.shared.getUID()
+    
     
     var leftConstraint: NSLayoutConstraint!
     var rightConstraint: NSLayoutConstraint!
@@ -40,7 +45,7 @@ class MessageTableCell: UITableViewCell {
     
     var time = CustomLabel(text: "", color: ColorConstants.customWhite, font: FontConstants.small)
     
-    func configureCell() {
+    func configureCell(isSender: Bool) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "hh:mm:a"
         
@@ -68,33 +73,14 @@ class MessageTableCell: UITableViewCell {
         leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
         rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
         
-        if messageItem?.sender == uid {
+        if isSender {
             //            messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -10).isActive = true
+            print("Sender 1\(messageItem?.content)")
             leftConstraint.isActive = false
             rightConstraint.isActive = true
             
             messageView.backgroundColor = ColorConstants.tealGreen
-            NSLayoutConstraint.activate([
-                
-                message.widthAnchor.constraint(lessThanOrEqualToConstant: 250),
-                messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
-                messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-                messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
-                
-                message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
-                message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
-                //            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
-                
-                time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
-                time.topAnchor.constraint(equalTo: message.bottomAnchor, constant: 5),
-                time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
-                //            time.widthAnchor.constraint(equalToConstant: 60),
-                
-                
-                
-                message.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
-                
-            ])
+            
             //            messageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = false
             //            messageView.widthAnchor.constraint(equalToConstant: 300).isActive = true
             
@@ -115,34 +101,35 @@ class MessageTableCell: UITableViewCell {
             //            sentImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
             
         } else {
+            print("Sender 2\(messageItem?.content)")
             rightConstraint.isActive = false
             leftConstraint.isActive = true
             //            messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = true
             
             messageView.backgroundColor = ColorConstants.grey
-            NSLayoutConstraint.activate([
-                
-                message.widthAnchor.constraint(lessThanOrEqualToConstant: 250),
-                messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
-                messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-                messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
-                
-                message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
-                message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
-                //            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
-                
-                time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
-                time.topAnchor.constraint(equalTo: message.bottomAnchor, constant: 5),
-                time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
-                //            time.widthAnchor.constraint(equalToConstant: 60),
-                
-                
-                
-                message.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
-                
-            ])
+            
         }
         
-        
+        NSLayoutConstraint.activate([
+            
+            message.widthAnchor.constraint(equalToConstant: 200),
+            messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
+            messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+            messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
+            
+            message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
+            message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
+            //            message.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+            
+            time.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+            time.topAnchor.constraint(equalTo: message.bottomAnchor, constant: 5),
+            time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
+            //            time.widthAnchor.constraint(equalToConstant: 60),
+            
+            
+            
+//            message.rightAnchor.constraint(equalTo: messageView.rightAnchor, constant: -10),
+            
+        ])
     }
 }
