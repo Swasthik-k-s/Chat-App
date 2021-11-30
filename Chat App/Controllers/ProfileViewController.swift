@@ -86,7 +86,7 @@ class ProfileViewController: UIViewController {
     }
     
     func uploadNewProfile(image: UIImage) {
-        ImageUploader.uploadImage(image: image, uid: userid) { url in
+        ImageUploader.uploadImage(image: image, name: userid) { url in
             self.currentUser?.profileURL = url
             
             NetworkManager.shared.addUser(user: self.currentUser!)

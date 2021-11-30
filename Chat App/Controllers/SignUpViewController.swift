@@ -74,7 +74,7 @@ class SignUpViewController: UIViewController {
                 if let result = result {
                     let uid = result.user.uid
                     
-                    ImageUploader.uploadImage(image: profilePic, uid: uid) { url in
+                    ImageUploader.uploadImage(image: profilePic, name: uid) { url in
 //                        let newUser = UserData()
 //                        newUser.email = email
 //                        newUser.username = username

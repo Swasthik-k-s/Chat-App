@@ -48,6 +48,7 @@ struct ImageConstants {
     static let roundFill = UIImage(systemName: "circle.fill")
     static let unseen = UIImage(systemName: "checkmark.circle")
     static let seen = UIImage(systemName: "checkmark.circle.fill")
+    static let picture = UIImage(systemName: "photo.fill")
     
 }
 
