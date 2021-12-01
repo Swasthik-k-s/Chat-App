@@ -25,10 +25,6 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        //        checkUserLogin()
-    }
-    
     let profileButton = CustomButton(title: "Profile", color: .white, textColor: ColorConstants.tealGreen, font: FontConstants.bold1, cornerRadius: 0)
     let logoutButton = CustomButton(title: "Logout", color: .white, textColor: ColorConstants.tealGreen, font: FontConstants.bold1, cornerRadius: 0)
     
@@ -80,21 +76,11 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             self.currentUser = currentUser
         }
         NetworkManager.shared.fetchChats(uid: NetworkManager.shared.getUID()!) { chats in
-//            print(chats)
-//            self.chats = []
             self.chats = chats
             DispatchQueue.main.async {
                 self.collectionView.reloadData()
             }
         }
-        
-//        DispatchQueue.main.async {
-//            self.collectionView.reloadData()
-//        }
-        
-//        NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { user in
-//            print(user)
-//        }
     }
     
     func configureUI() {
@@ -102,11 +88,11 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         navigationItem.title = "Chat App"
         
         let menu = UIBarButtonItem(image: ImageConstants.menu, style: .plain, target: self, action: #selector(handleMenu))
-
+        
         navigationItem.rightBarButtonItems = [menu]
         
         let edit = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(handleEdit))
-
+        
         navigationItem.leftBarButtonItems = [edit]
         
         view.addSubview(addButton)
@@ -184,15 +170,6 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     @objc func handleEdit() {
         editMode = !editMode
-//        if editMode {
-//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-//                self.view.frame.origin.x = 62
-//            }, completion: nil)
-//        } else {
-//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-//                self.view.frame.origin.x = 0
-//            },completion: nil)
-//        }
         initialFetch  = true
         collectionView.reloadData()
         
@@ -244,10 +221,6 @@ extension HomeViewController: ChatSelectedDelegate {
     func chatSelected(isSelected: Bool) {
         print("Selected\(isSelected)")
     }
-    
-    
-    
-    
 }
 
 extension HomeViewController: UICollectionViewDataSource {
@@ -261,19 +234,6 @@ extension HomeViewController: UICollectionViewDataSource {
         let chat = chats[indexPath.row]
         cell.chat = chat
         cell.animateView(open: editMode)
-        
-//        let otherUser = chat.users[chat.otherUser!]
-        
-//        NetworkManager.shared.downloadImage(url: fetchUser.profileURL) { image in
-//            cell.profileImage.image = image
-//        }
-        
-//        if !initialFetch {
-//
-//        }
-        
-        
-        
         return cell
     }
     

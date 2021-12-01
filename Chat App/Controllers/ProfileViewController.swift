@@ -8,7 +8,7 @@
 import UIKit
 
 class ProfileViewController: UIViewController {
-
+    
     let userid = NetworkManager.shared.getUID()!
     var currentUser: UserData?
     
@@ -24,7 +24,7 @@ class ProfileViewController: UIViewController {
     let username = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
     let email = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
     let uid = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
-
+    
     func configureUI() {
         view.backgroundColor = .white
         navigationItem.title = "Profile"
@@ -52,7 +52,7 @@ class ProfileViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             profileImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//            profileImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            //            profileImage.rightAnchor.constraint(equalTo: view.rightAnchor),
             profileImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             
             userDataStack.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
@@ -86,12 +86,13 @@ class ProfileViewController: UIViewController {
     }
     
     func uploadNewProfile(image: UIImage) {
-        ImageUploader.uploadImage(image: image, name: userid) { url in
+        let path = "Profile/\(userid)"
+        ImageUploader.uploadImage(image: image, name: path) { url in
             self.currentUser?.profileURL = url
             
             NetworkManager.shared.addUser(user: self.currentUser!)
             print("New URL\(url)")
-
+            
         }
     }
 }

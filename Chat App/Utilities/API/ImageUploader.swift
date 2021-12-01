@@ -16,7 +16,7 @@ struct ImageUploader {
         
         guard let imageData = image.jpegData(compressionQuality: 0.4) else { return }
         
-        storage.child("Profile").child(name).putData(imageData, metadata: nil) { _, error in
+        storage.child(name).putData(imageData, metadata: nil) { _, error in
             guard error == nil else { return }
             
             storage.child("Profile").child(name).downloadURL { url, error in
@@ -28,7 +28,6 @@ struct ImageUploader {
                 
                 print("Download URL: \(urlString)")
                 completion(urlString)
-//                UserDefaults.standard.set(urlString, forKey: "url")
             }
         }
     }
