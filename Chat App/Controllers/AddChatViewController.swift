@@ -36,10 +36,6 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         view.backgroundColor = .white
         navigationItem.title = "Select User"
         navigationItem.backButtonTitle = ""
-        
-//        let search = UIBarButtonItem(image: ImageConstants.search, style: .plain, target: self, action: #selector(handleSearch))
-//
-//        navigationItem.rightBarButtonItems = [search]
     }
     
     func configureCollectionView() {
@@ -59,9 +55,7 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         searchController.searchBar.enablesReturnKeyAutomatically = false
         searchController.searchBar.returnKeyType = UIReturnKeyType.done
         searchController.searchBar.tintColor = .white
-//        searchController.searchBar.barTintColor = .blue
-//        searchController.tabBarItem.badgeColor = .blue
-//        navigationItem.titleView?.tintColor = .red
+        
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
@@ -128,8 +122,6 @@ extension AddChatViewController: UICollectionViewDataSource {
                 
                 vcArray?.append(chatVC)
                 navigationController?.setViewControllers(vcArray!, animated: true)
-//                navigationController?.pushViewController(chatVC, animated: true)
-//                navigationController?.popViewController(animated: false)
                 return
             }
             
@@ -141,9 +133,6 @@ extension AddChatViewController: UICollectionViewDataSource {
         
         vcArray?.append(chatVC)
         navigationController?.setViewControllers(vcArray!, animated: true)
-//        navigationController?.popViewController(animated: false)
-//        navigationController?.pushViewController(chatVC, animated: true)
-        
     }
 }
 

@@ -13,7 +13,7 @@ struct Message {
     var time: Date
     var seen: Bool
     var dateString: String?
-    var image: String?
+    var imagePath: String?
     var id: String?
     
     var dictionary: [String: Any] {
@@ -21,7 +21,8 @@ struct Message {
             "sender": sender,
             "content": content,
             "time": dateString!,
-            "seen": seen
+            "seen": seen,
+            "imagePath": imagePath!
         ]
     }
     

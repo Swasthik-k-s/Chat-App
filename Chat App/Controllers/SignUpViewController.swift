@@ -73,13 +73,9 @@ class SignUpViewController: UIViewController {
                 
                 if let result = result {
                     let uid = result.user.uid
+                    let path = "Profile/\(uid)"
                     
-                    ImageUploader.uploadImage(image: profilePic, name: uid) { url in
-//                        let newUser = UserData()
-//                        newUser.email = email
-//                        newUser.username = username
-//                        newUser.uid = uid
-//                        newUser.profileURL = url
+                    ImageUploader.uploadImage(image: profilePic, name: path) { url in
                         let newUser = UserData(username: username, email: email, profileURL: url, uid: uid)
                         NetworkManager.shared.addUser(user: newUser)
                         self.delegate?.userAuthenticated()

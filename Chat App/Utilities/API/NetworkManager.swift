@@ -41,12 +41,11 @@ struct NetworkManager {
         database.child("Users").child(uid).observe(.value) { snapshot in
             if let dictionary = snapshot.value as? [String: Any] {
                 
-//                print(dictionary)
                 let email = dictionary["email"] as! String
                 let username = dictionary["username"] as! String
                 let profileURL = dictionary["profileURL"] as! String
                 let uid = dictionary["uid"] as! String
-
+                
                 let user = UserData(username: username, email: email, profileURL: profileURL, uid: uid)
                 completion(user)
             }
@@ -60,13 +59,12 @@ struct NetworkManager {
         
         database.child("Users").observe(.value) { snapshot in
             if let result = snapshot.value as? [String: Any] {
-//                print(result)
+                
                 for userid in result.keys {
                     if userid == uid {
                         continue
                     }
                     let userData = result[userid] as! [String: Any]
-                    
                     let email = userData["email"] as! String
                     let username = userData["username"] as! String
                     let uid = userData["uid"] as! String
@@ -77,7 +75,6 @@ struct NetworkManager {
                 completion(users)
             }
         }
-        
     }
     
     func addChat(user1: UserData, user2: UserData, id: String) {
@@ -86,7 +83,7 @@ struct NetworkManager {
         userDictionary.append(user1.dictionary)
         userDictionary.append(user2.dictionary)
         let finalDic = ["users" : userDictionary]
-
+        
         database.child("Chats").child(id).setValue(finalDic)
     }
     
@@ -94,35 +91,16 @@ struct NetworkManager {
         
         database.child("Chats").observe(.value) { snapshot in
             var chats = [Chats]()
-//            print("//////////////////////////")
             if let result = snapshot.value as? [String: [String: Any]] {
-//                print(result)
-                
-//                let sortedChatsKey = result.keys.sorted()
                 
                 for key in result.keys {
-//                   print(keys)
                     let value = result[key]!
-                    var messagesArray: [Message] = []
                     var lastMessage: Message?
                     
                     let users = value["users"] as! [[String: Any]]
                     let lastMessageDictionary = value["lastMessage"] as? [String: Any]
-                    let messagesDictionary = value["messages"] as? [[String: Any]]
-//                    print(users)
+                    
                     if lastMessageDictionary != nil {
-//                        for messageItem in messagesDictionary! {
-//                            let sender = messageItem["sender"] as! String
-//                            let content = messageItem["content"] as! String
-//                            let timeString = messageItem["time"] as! String
-//                            let seen = messageItem["seen"] as! Bool
-//
-//                            let time = databaseDateFormatter.date(from: timeString)
-//
-//                            let currentMessage = Message(sender: sender, content: content, time: time!, seen: seen)
-//
-//                            messagesArray.append(currentMessage)
-//                        }
                         
                         let sender = lastMessageDictionary!["sender"] as! String
                         let content = lastMessageDictionary!["content"] as! String
@@ -134,7 +112,6 @@ struct NetworkManager {
                         lastMessage = Message(sender: sender, content: content, time: time!, seen: seen)
                         
                     } else {
-                        messagesArray = []
                         lastMessage = nil
                     }
                     
@@ -179,17 +156,13 @@ struct NetworkManager {
     func fetchMessages(chatId: String, completion: @escaping([Message]) -> Void) {
         database.child("Chats").child("\(chatId)/messages").observe(.value) { snapshot in
             var resultArray: [Message] = []
-            print("Messages\(snapshot.value)")
             if let result = snapshot.value as? [String: [String: Any]] {
-//                print("Result\(result)")
                 
                 let sortedKeyArray = result.keys.sorted()
                 for id in sortedKeyArray {
-//                    print("Messages\(message)")
                     let message = result[id]!
                     resultArray.append(createMessageObject(dictionary: message , id: id))
                 }
-                
                 completion(resultArray)
             }
         }
@@ -197,7 +170,6 @@ struct NetworkManager {
     
     func addMessage(messages: [Message], lastMessage: Message, id: String) {
         
-//        var currentChat = chat
         var lastMessageItem = lastMessage
         
         let dateString = databaseDateFormatter.string(from: lastMessageItem.time)
@@ -211,11 +183,8 @@ struct NetworkManager {
             message.dateString = dateString
             messagesDictionary.append(message.dictionary)
         }
-//        userDictionary.append(user1.dictionary)
-//        userDictionary.append(user2.dictionary)
         let finalDictionary = ["lastMessage": lastMessageDictionary]
-                               
-//        database.child("Chats").child(id).setValue(finalDictionary)
+        
         database.child("Chats").child(id).updateChildValues(finalDictionary)
         database.child("Chats").child(id).child("messages").childByAutoId().setValue(lastMessageDictionary)
     }
@@ -262,9 +231,9 @@ struct NetworkManager {
         let content = dictionary["content"] as! String
         let timeString = dictionary["time"] as! String
         let seen = dictionary["seen"] as! Bool
-        
+        let imagePath = dictionary["imagePath"] as! String
         let time = databaseDateFormatter.date(from: timeString)
         
-        return Message(sender: sender, content: content, time: time!, seen: seen, id: id)
+        return Message(sender: sender, content: content, time: time!, seen: seen, imagePath: imagePath, id: id)
     }
 }

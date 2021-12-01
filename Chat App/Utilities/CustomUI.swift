@@ -29,7 +29,7 @@ class InputFieldView: UIView {
         iv.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         iv.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = true
         
-//        let textField = CustomTextField(placeholder: placeHolder, color: color)
+        //        let textField = CustomTextField(placeholder: placeHolder, color: color)
         addSubview(textField)
         
         textField.translatesAutoresizingMaskIntoConstraints = false
