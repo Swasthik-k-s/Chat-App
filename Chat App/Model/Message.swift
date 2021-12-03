@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct Message {
     var sender: String
@@ -13,7 +14,8 @@ struct Message {
     var time: Date
     var seen: Bool
     var dateString: String?
-    var imagePath: String?
+    var imagePath: String
+    var image: UIImage?
     var id: String?
     
     var dictionary: [String: Any] {
@@ -22,7 +24,7 @@ struct Message {
             "content": content,
             "time": dateString!,
             "seen": seen,
-            "imagePath": imagePath!
+            "imagePath": imagePath
         ]
     }
     
