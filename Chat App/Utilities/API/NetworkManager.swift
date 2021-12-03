@@ -153,11 +153,33 @@ struct NetworkManager {
         }
     }
     
+//    func fetchLastMessage(chatId: String, messagesArray: [Message], completion: @escaping(Message) -> Void) {
+//        database.child("Chats\(chatId)/lastMessage").observe(.childChanged) { snapshot in
+//            if let result = snapshot.value as? [String: Any] {
+//                recentMessage = createMessageObject(dictionary: result, id: <#T##String#>)
+//            }
+//        }
+//    }
+    
     func fetchMessages(chatId: String, completion: @escaping([Message]) -> Void) {
+        
+//        database.child("Chats").child("\(chatId)/messages").observeSingleEvent(of: .value) { snapshot in
+//            var resultArray: [Message] = []
+//            if let result = snapshot.value as? [String: [String: Any]] {
+//
+//                let sortedKeyArray = result.keys.sorted()
+//                for id in sortedKeyArray {
+//                    let message = result[id]!
+//                    resultArray.append(createMessageObject(dictionary: message , id: id))
+//                }
+//                completion(resultArray)
+//            }
+//        }
+        
         database.child("Chats").child("\(chatId)/messages").observe(.value) { snapshot in
             var resultArray: [Message] = []
             if let result = snapshot.value as? [String: [String: Any]] {
-                
+
                 let sortedKeyArray = result.keys.sorted()
                 for id in sortedKeyArray {
                     let message = result[id]!
@@ -168,7 +190,7 @@ struct NetworkManager {
         }
     }
     
-    func addMessage(messages: [Message], lastMessage: Message, id: String) {
+    func addMessage(lastMessage: Message, id: String) {
         
         var lastMessageItem = lastMessage
         
@@ -176,13 +198,6 @@ struct NetworkManager {
         lastMessageItem.dateString = dateString
         
         let lastMessageDictionary = lastMessageItem.dictionary
-        var messagesDictionary: [[String: Any]] = []
-        
-        for var message in messages {
-            let dateString = databaseDateFormatter.string(from: message.time)
-            message.dateString = dateString
-            messagesDictionary.append(message.dictionary)
-        }
         let finalDictionary = ["lastMessage": lastMessageDictionary]
         
         database.child("Chats").child(id).updateChildValues(finalDictionary)
