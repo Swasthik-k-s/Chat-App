@@ -12,37 +12,17 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     var chat: Chats!
     var messages: [Message] = []
     let cellIdentifier = "messageCell"
-    var collectionView: UICollectionView!
     var otherUser: UserData!
     var currentUser: UserData!
     var chatId: String?
     
-//    var tableView: UITableView!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureNavigationBar()
-//        configureCollectionView()
         configureTableView()
         fetchChats()
         configureUI()
-        setKeyboardObservers()
-        
-        // Do any additional setup after loading the view.
     }
-    
-//    let textField = CustomTextField(placeholder: "Message", color: ColorConstants.tealGreen)
-    let textField: UITextView = {
-        let field = UITextView()
-//        field.text = "Message"
-        field.textColor = ColorConstants.dimTealGreen
-        field.textContainerInset = UIEdgeInsets(top: 14, left: 10, bottom: 14, right: 10)
-        field.font = FontConstants.normal2
-        field.centerVertical()
-        field.layer.cornerRadius = 25
-        field.backgroundColor = ColorConstants.white
-        return field
-    }()
     
     let sendButton: UIButton = {
         let button = UIButton()
@@ -50,6 +30,9 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         button.tintColor = ColorConstants.white
         button.backgroundColor = ColorConstants.darkTealGreen
         button.layer.cornerRadius = 25
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
+        
         return button
     }()
     
@@ -59,26 +42,66 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         button.tintColor = ColorConstants.white
         button.backgroundColor = ColorConstants.darkTealGreen
         button.layer.cornerRadius = 25
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handlePic), for: .touchUpInside)
         return button
     }()
     
-    let containerView = UIView()
+    lazy var textField: UITextField = {
+        let text = UITextField()
+        text.placeholder = "Message"
+        text.frame = CGRect(x: 0, y: 50, width: view.frame.width, height: 50)
+        text.translatesAutoresizingMaskIntoConstraints = false
+        text.backgroundColor = ColorConstants.white
+        text.layer.cornerRadius = 25
+        text.textColor = ColorConstants.tealGreen
+        text.leftPadding(value: 10)
+        text.rightPadding(value: 10)
+        return text
+    }()
     
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.textColor == ColorConstants.dimTealGreen {
-            textView.text = ""
-            textView.textColor = ColorConstants.tealGreen
-        } else {
-            if textView.text == "" {
-                textView.text = "Message"
-                textView.textColor = ColorConstants.dimTealGreen
-            }
-        }
-    }
+    lazy var inputContainerView: UIView = {
+        
+        let containerView = UIView()
+//        containerView.backgroundColor = .red
+        containerView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 60)
+        containerView.translatesAutoresizingMaskIntoConstraints = false
 
+        containerView.addSubview(textField)
+        
+        let separatorLineView = UIView()
+//        separatorLineView.backgroundColor = .red
+        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
+        
+        containerView.addSubview(sendButton)
+        containerView.addSubview(picButton)
+        
+        sendButton.rightAnchor.constraint(equalTo: containerView.rightAnchor, constant: -5).isActive = true
+        sendButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        sendButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        sendButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        
+        picButton.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: -5).isActive = true
+        picButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        picButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        picButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        
+        containerView.addSubview(textField)
+        textField.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 5).isActive = true
+        textField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        textField.rightAnchor.constraint(equalTo: picButton.leftAnchor, constant: -5).isActive = true
+        textField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        containerView.addSubview(separatorLineView)
+        separatorLineView.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
+        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
+        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
+        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        return containerView
+    }()
+    
     func configureUI() {
         
-        textField.delegate = self
         view.backgroundColor = ColorConstants.customWhite
         chatId = "\(chat.users[0].uid)_\(chat.users[1].uid)"
         
@@ -92,65 +115,17 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         
         navigationItem.title = otherUser.username
         navigationItem.backButtonTitle = ""
-        
-        sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
-        picButton.addTarget(self, action: #selector(handlePic), for: .touchUpInside)
-        
-        view.addSubview(containerView)
-        containerView.addSubview(textField)
-        containerView.addSubview(sendButton)
-        containerView.addSubview(picButton)
-        
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
-        picButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-
-            containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            containerView.heightAnchor.constraint(equalToConstant: 50),
-            containerView.widthAnchor.constraint(equalTo: view.widthAnchor),
-            
-            tableView.bottomAnchor.constraint(equalTo: containerView.topAnchor, constant: -5),
-            
-            textField.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 5),
-            textField.heightAnchor.constraint(equalToConstant: 50),
-
-            sendButton.rightAnchor.constraint(equalTo: containerView.rightAnchor, constant: -5),
-            sendButton.heightAnchor.constraint(equalToConstant: 50),
-            sendButton.widthAnchor.constraint(equalToConstant: 50),
-
-            picButton.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: -5),
-            picButton.heightAnchor.constraint(equalToConstant: 50),
-            picButton.widthAnchor.constraint(equalToConstant: 50),
-            
-            textField.rightAnchor.constraint(equalTo: picButton.leftAnchor, constant: -5),
-            
-        ])
     }
     
     override var inputAccessoryView: UIView? {
-        return containerView
+        get {
+            return inputContainerView
+        }
     }
     
-    func canBecomeFirstResponder() -> Bool {
-        return true
-    }
-    
-    func setKeyboardObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-    
-    @objc func keyboardWillShow(notification: NSNotification) {
-//        self.view.frame.origin.y = -335
-    }
-    
-    @objc func keyboardWillHide() {
-//        self.view.frame.origin.y = 0
-    }
+    override var canBecomeFirstResponder: Bool {
+            return true
+        }
     
     @objc func handlePic() {
         let picker = UIImagePickerController()
@@ -162,23 +137,21 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     func fetchChats() {
         messages = []
         NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
-            //            print("Messages\(messages)")
             self.messages = messages
+            
             DispatchQueue.main.async {
                 self.tableView.reloadData()
                 self.tableView.scrollToRow(at: [0, messages.count - 1], at: .bottom, animated: false)
             }
-//            self.tableView.reloadData()
-//            self.tableView.scrollToRow(at: [0, messages.count - 1], at: .bottom, animated: false)
         }
     }
     
     func configureTableView() {
-
-        tableView.separatorStyle = .none
-        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        tableView.register(MessageTableCell.self, forCellReuseIdentifier: cellIdentifier)
         
+        tableView.separatorStyle = .none
+//        tableView.contentInset = UIEdgeInsets(top: 5, left: 0, bottom: 70 , right: 0)
+        tableView.register(MessageTableCell.self, forCellReuseIdentifier: cellIdentifier)
+        tableView.alwaysBounceVertical = true
     }
     
     @objc func handleProfile() {
@@ -187,13 +160,9 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     
     @objc func handleSend() {
         if textField.text != "" {
-            let newMessage = Message(sender: currentUser.uid, content: textField.text!, time: Date(), seen: false)
-//            messages.append(newMessage)
-            var messagesArray = messages
-            messagesArray.append(newMessage)
-//            messages.append(newMessage)
+            let newMessage = Message(sender: currentUser.uid, content: textField.text!, time: Date(), seen: false, imagePath: "")
             
-            NetworkManager.shared.addMessage(messages: messagesArray, lastMessage: newMessage, id: chatId!)
+            NetworkManager.shared.addMessage(lastMessage: newMessage, id: chatId!)
             
             textField.text = ""
         }
@@ -203,19 +172,6 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         navigationController?.popViewController(animated: true)
     }
     
-    func tryWork(message: Message, indexPath: IndexPath) {
-        let cell = tableView(tableView, cellForRowAt: indexPath) as! MessageTableCell
-        if message.sender == currentUser.uid {
-            cell.leftConstraint.isActive = false
-            cell.rightConstraint.isActive = true
-            cell.message.backgroundColor = ColorConstants.tealGreen
-        } else {
-            cell.rightConstraint.isActive = false
-            cell.leftConstraint.isActive = true
-            cell.message.backgroundColor = ColorConstants.grey
-        }
-    }
-    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
@@ -223,15 +179,15 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! MessageTableCell
         
-//        let messageItem =
-       
         let messagesItem = messages[indexPath.row]
-//        tryWork(message: messagesItem, indexPath: indexPath)
+        print("Message Item\(messagesItem)")
         cell.messageItem = messagesItem
-//        cell.senderUid = messageItem.sender
-//        cell.currentUid = NetworkManager.shared.getUID()
-//        cell.message.text = messageItem.content
-        
+
+//        if messages[indexPath.row].imagePath == "" {
+//            cell.configureCell(isSender: NetworkManager.shared.getUID() == messages[indexPath.row].sender)
+//        } else {
+//            cell.configureImageCell(isSender: NetworkManager.shared.getUID() == messages[indexPath.row].sender)
+//        }
         
         cell.backgroundColor = ColorConstants.customWhite
         return cell
@@ -239,18 +195,24 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
     }
     
     func uploadPhoto(image: UIImage) {
-        
+        let path = "Chats/\(chatId!)/\(UUID())"
+        let newMessage = Message(sender: self.currentUser.uid, content: "", time: Date(), seen: false, imagePath: path)
+
+        ImageUploader.uploadImage(image: image, name: path) { url in
+            
+        }
+        NetworkManager.shared.addMessage(lastMessage: newMessage, id: self.chatId!)
+        self.tableView.reloadData()
     }
 }
 
 extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let imageSelected = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-//            profileImage.image = imageSelected
-//            profileImage.layer.borderColor = ColorConstants.tealGreen.cgColor
             uploadPhoto(image: imageSelected)
         }
         

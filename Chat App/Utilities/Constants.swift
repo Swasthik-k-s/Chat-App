@@ -63,7 +63,6 @@ struct menuItemConstants {
     static let settings = "Settings"
     static let profile = "Profile"
     static let logout = "Logout"
-    
     static let menuItemArray = [settings, profile, logout]
 }
 
