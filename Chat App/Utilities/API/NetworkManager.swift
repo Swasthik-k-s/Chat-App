@@ -106,10 +106,11 @@ struct NetworkManager {
                         let content = lastMessageDictionary!["content"] as! String
                         let timeString = lastMessageDictionary!["time"] as! String
                         let seen = lastMessageDictionary!["seen"] as! Bool
+                        let imagePath = lastMessageDictionary!["imagePath"] as! String
                         
                         let time = databaseDateFormatter.date(from: timeString)
                         
-                        lastMessage = Message(sender: sender, content: content, time: time!, seen: seen)
+                        lastMessage = Message(sender: sender, content: content, time: time!, seen: seen, imagePath: imagePath)
                         
                     } else {
                         lastMessage = nil
@@ -153,37 +154,25 @@ struct NetworkManager {
         }
     }
     
-//    func fetchLastMessage(chatId: String, messagesArray: [Message], completion: @escaping(Message) -> Void) {
-//        database.child("Chats\(chatId)/lastMessage").observe(.childChanged) { snapshot in
-//            if let result = snapshot.value as? [String: Any] {
-//                recentMessage = createMessageObject(dictionary: result, id: <#T##String#>)
-//            }
-//        }
-//    }
+    //    func fetchLastMessage(chatId: String, messagesArray: [Message], completion: @escaping(Message) -> Void) {
+    //        database.child("Chats\(chatId)/lastMessage").observe(.childChanged) { snapshot in
+    //            if let result = snapshot.value as? [String: Any] {
+    //                recentMessage = createMessageObject(dictionary: result, id: <#T##String#>)
+    //            }
+    //        }
+    //    }
     
     func fetchMessages(chatId: String, completion: @escaping([Message]) -> Void) {
-        
-//        database.child("Chats").child("\(chatId)/messages").observeSingleEvent(of: .value) { snapshot in
-//            var resultArray: [Message] = []
-//            if let result = snapshot.value as? [String: [String: Any]] {
-//
-//                let sortedKeyArray = result.keys.sorted()
-//                for id in sortedKeyArray {
-//                    let message = result[id]!
-//                    resultArray.append(createMessageObject(dictionary: message , id: id))
-//                }
-//                completion(resultArray)
-//            }
-//        }
         
         database.child("Chats").child("\(chatId)/messages").observe(.value) { snapshot in
             var resultArray: [Message] = []
             if let result = snapshot.value as? [String: [String: Any]] {
-
+                
                 let sortedKeyArray = result.keys.sorted()
                 for id in sortedKeyArray {
                     let message = result[id]!
-                    resultArray.append(createMessageObject(dictionary: message , id: id))
+                    let messageObject = createMessageObject(dictionary: message , id: id)
+                    resultArray.append(messageObject)
                 }
                 completion(resultArray)
             }
@@ -249,6 +238,13 @@ struct NetworkManager {
         let imagePath = dictionary["imagePath"] as! String
         let time = databaseDateFormatter.date(from: timeString)
         
-        return Message(sender: sender, content: content, time: time!, seen: seen, imagePath: imagePath, id: id)
+        var messageItem = Message(sender: sender, content: content, time: time!, seen: seen, imagePath: imagePath, id: id)
+        
+        //        if imagePath != "" {
+        //            NetworkManager.shared.downloadImageWithPath(path: imagePath, completion: { image in
+        //                messageItem.image = image
+        //            })
+        //        }
+        return messageItem
     }
 }

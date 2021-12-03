@@ -11,7 +11,8 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     
     var chat: Chats!
     var messages: [Message] = []
-    let cellIdentifier = "messageCell"
+    let messageCellIdentifier = "messageCell"
+    let imageCellIdentifier = "imageCell"
     var otherUser: UserData!
     var currentUser: UserData!
     var chatId: String?
@@ -138,7 +139,8 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         messages = []
         NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
             self.messages = messages
-            
+            print(messages)
+    
             DispatchQueue.main.async {
                 self.tableView.reloadData()
                 self.tableView.scrollToRow(at: [0, messages.count - 1], at: .bottom, animated: false)
@@ -147,10 +149,12 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
     
     func configureTableView() {
-        
+        tableView.isUserInteractionEnabled = true
+        tableView.keyboardDismissMode = .onDrag
         tableView.separatorStyle = .none
 //        tableView.contentInset = UIEdgeInsets(top: 5, left: 0, bottom: 70 , right: 0)
-        tableView.register(MessageTableCell.self, forCellReuseIdentifier: cellIdentifier)
+        tableView.register(MessageTableCell.self, forCellReuseIdentifier: messageCellIdentifier)
+        tableView.register(ImageTableCell.self, forCellReuseIdentifier: imageCellIdentifier)
         tableView.alwaysBounceVertical = true
     }
     
@@ -177,20 +181,25 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! MessageTableCell
         
-        let messagesItem = messages[indexPath.row]
-        print("Message Item\(messagesItem)")
-        cell.messageItem = messagesItem
+        if messages[indexPath.row].imagePath == "" {
+            let cell = tableView.dequeueReusableCell(withIdentifier: messageCellIdentifier, for: indexPath) as! MessageTableCell
+            cell.messageItem = messages[indexPath.row]
+            cell.backgroundColor = ColorConstants.customWhite
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: imageCellIdentifier, for: indexPath) as! ImageTableCell
+            cell.messageItem = messages[indexPath.row]
+            NetworkManager.shared.downloadImageWithPath(path: messages[indexPath.row].imagePath, completion: { image in
+                DispatchQueue.main.async {
+                    cell.chatImage.image = image
+                }
+            })
 
-//        if messages[indexPath.row].imagePath == "" {
-//            cell.configureCell(isSender: NetworkManager.shared.getUID() == messages[indexPath.row].sender)
-//        } else {
-//            cell.configureImageCell(isSender: NetworkManager.shared.getUID() == messages[indexPath.row].sender)
-//        }
-        
-        cell.backgroundColor = ColorConstants.customWhite
-        return cell
+            cell.backgroundColor = ColorConstants.customWhite
+            return cell
+            
+        }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -206,7 +215,6 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
             
         }
         NetworkManager.shared.addMessage(lastMessage: newMessage, id: self.chatId!)
-        self.tableView.reloadData()
     }
 }
 
