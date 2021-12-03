@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-extension CustomTextField {
+extension UITextField {
     func leftPadding(value: CGFloat) {
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: value, height: self.frame.size.height))
         self.leftView = paddingView

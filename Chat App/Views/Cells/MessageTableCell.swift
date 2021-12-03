@@ -13,13 +13,13 @@ class MessageTableCell: UITableViewCell {
         didSet {
             var isSender: Bool
             guard let uid = NetworkManager.shared.getUID() else { return }
-            
+
             if uid != messageItem?.sender {
                 isSender = false
             } else {
                 isSender = true
             }
-            
+
             if messageItem!.imagePath! == "" {
                 configureCell(isSender: isSender)
             } else {
@@ -56,8 +56,10 @@ class MessageTableCell: UITableViewCell {
     }()
     
     var time = CustomLabel(text: "", color: ColorConstants.customWhite, font: FontConstants.small)
-    
+        
     func configureImageCell(isSender: Bool) {
+        leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
+        rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
         
         time.text = dateToStringConvertor(date: messageItem!.time)
         NetworkManager.shared.downloadImageWithPath(path: messageItem!.imagePath!, completion: { image in
@@ -80,8 +82,7 @@ class MessageTableCell: UITableViewCell {
             messageView.widthAnchor.constraint(equalTo: chatImage.widthAnchor, constant: 20),
             messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
             messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
-            messageView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            
+//            messageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             chatImage.centerXAnchor.constraint(equalTo: messageView.centerXAnchor),
             chatImage.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
             
@@ -89,9 +90,19 @@ class MessageTableCell: UITableViewCell {
             time.topAnchor.constraint(equalTo: chatImage.bottomAnchor, constant: 5),
             time.bottomAnchor.constraint(equalTo: messageView.bottomAnchor, constant: -10),
         ])
+        if isSender {
+            leftConstraint.isActive = false
+            rightConstraint.isActive = true
+        } else {
+            rightConstraint.isActive = false
+            leftConstraint.isActive = true
+            
+        }
     }
     
     func configureCell(isSender: Bool) {
+        leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
+        rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
         
         message.text = messageItem!.content
         time.text = dateToStringConvertor(date: messageItem!.time)
@@ -104,28 +115,25 @@ class MessageTableCell: UITableViewCell {
         message.translatesAutoresizingMaskIntoConstraints = false
         time.translatesAutoresizingMaskIntoConstraints = false
         
-        //        leftConstraint = messageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 5)
-        //        rightConstraint = messageView.rightAnchor.constraint(equalTo: rightAnchor, constant: -5)
-        
         if isSender {
-            //            leftConstraint.isActive = false
-            //            rightConstraint.isActive = true
+            leftConstraint.isActive = false
+            rightConstraint.isActive = true
             messageView.backgroundColor = ColorConstants.tealGreen
             
         } else {
-            //            rightConstraint.isActive = false
-            //            leftConstraint.isActive = true
+            rightConstraint.isActive = false
+            leftConstraint.isActive = true
             messageView.backgroundColor = ColorConstants.grey
             
         }
         
         NSLayoutConstraint.activate([
             
-            message.widthAnchor.constraint(equalToConstant: 200),
+            message.widthAnchor.constraint(lessThanOrEqualToConstant: 200),
             messageView.widthAnchor.constraint(equalTo: message.widthAnchor, constant: 60),
             messageView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
             messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
-            messageView.centerXAnchor.constraint(equalTo: centerXAnchor),
+//            messageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             
             message.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
             message.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
