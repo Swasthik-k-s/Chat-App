@@ -105,7 +105,6 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             addButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20),
             addButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
         ])
-        print("Home Screen")
     }
     
     func configureCollectionView() {

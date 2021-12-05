@@ -25,6 +25,8 @@ class LoginViewController: UIViewController {
     let bottomText = CustomLabel(text: "Don't have an Account?", color: ColorConstants.tealGreen, font: FontConstants.normal1)
     let signUpButton = CustomButton(title: "Sign Up", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold2, cornerRadius: 0)
     
+    let forgotPasswordButton = CustomButton(title: "Forgot Password", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold1, cornerRadius: 0)
+    
     let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.tealGreen)
     let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.tealGreen)
     
@@ -40,6 +42,8 @@ class LoginViewController: UIViewController {
     }()
     
     let loginButton = CustomButton(title: "Login", color: ColorConstants.darkTealGreen, textColor: .white, font: FontConstants.bold1, cornerRadius: 25)
+    
+    let scrollView = UIScrollView()
     
     @objc func navigateSignUp() {
         let signUpVC = SignUpViewController()
@@ -69,6 +73,21 @@ class LoginViewController: UIViewController {
         }
     }
     
+    @objc func handleForgotPassword() {
+        guard let email = emailTextField.text else { return }
+        if emailValidation(email: email) {
+            NetworkManager.shared.resetPassword(email: email) { result in
+                if result == "Sent" {
+                    self.showAlert(title: "Password Reset Email Sent", message: "A Password Reset link has been sent to your Email")
+                } else {
+                    self.showAlert(title: "Failed", message: "Error while reseting the Password. Try Again Later")
+                }
+            }
+        } else {
+            showAlert(title: "Please Enter Valid Email", message: MessageConstants.emailInvalid)
+        }
+    }
+    
     @objc func textDidChange(sender: UITextField) {
         if sender == emailTextField {
             emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
@@ -81,6 +100,12 @@ class LoginViewController: UIViewController {
     func configureNotificationObserver() {
         emailTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         passwordTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleOrientationChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+    
+    @objc func handleOrientationChange() {
+        scrollView.contentSize = CGSize(width: view.frame.width, height: 600)
     }
     
     func validateLogin(email: String, password: String) -> String? {
@@ -96,6 +121,7 @@ class LoginViewController: UIViewController {
     func configureUI() {
         
         signUpButton.addTarget(self, action: #selector(navigateSignUp), for: .touchUpInside)
+        forgotPasswordButton.addTarget(self, action: #selector(handleForgotPassword), for: .touchUpInside)
         loginButton.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
         loginButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
@@ -113,28 +139,40 @@ class LoginViewController: UIViewController {
         bottomStack.spacing = 5
         bottomStack.distribution = .fill
         
-        view.addSubview(topStack)
-        view.addSubview(inputFieldStack)
-        view.addSubview(bottomStack)
+        view.addSubview(scrollView)
+        scrollView.addSubview(topStack)
+        scrollView.addSubview(inputFieldStack)
+        scrollView.addSubview(bottomStack)
+        scrollView.addSubview(forgotPasswordButton)
         
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         topStack.translatesAutoresizingMaskIntoConstraints = false
         bottomStack.translatesAutoresizingMaskIntoConstraints = false
         inputFieldStack.translatesAutoresizingMaskIntoConstraints = false
+        forgotPasswordButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             
-            topStack.leftAnchor.constraint(equalTo: view.leftAnchor),
-            topStack.rightAnchor.constraint(equalTo: view.rightAnchor),
-            topStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            scrollView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            scrollView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            topStack.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            topStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 20),
             
-            bottomStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            bottomStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
-            inputFieldStack.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
-            inputFieldStack.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
+            inputFieldStack.leftAnchor.constraint(equalTo: scrollView.safeAreaLayoutGuide.leftAnchor, constant: 20),
+            inputFieldStack.rightAnchor.constraint(equalTo: scrollView.safeAreaLayoutGuide.rightAnchor, constant: -20),
             inputFieldStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 30),
             
+            forgotPasswordButton.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            forgotPasswordButton.topAnchor.constraint(equalTo: inputFieldStack.bottomAnchor, constant: 10),
+            
+            bottomStack.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            bottomStack.topAnchor.constraint(equalTo: forgotPasswordButton.bottomAnchor, constant: 10),
+            
         ])
+        scrollView.contentSize = CGSize(width: view.frame.width, height: 600)
     }
 }
 

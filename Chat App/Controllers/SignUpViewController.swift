@@ -48,6 +48,8 @@ class SignUpViewController: UIViewController {
     
     let signUpButton = CustomButton(title: "Sign Up", color: ColorConstants.darkTealGreen, textColor: .white, font: FontConstants.bold1, cornerRadius: 25)
     
+    let scrollView = UIScrollView()
+    
     @objc func navigateLogin() {
         navigationController?.popViewController(animated: true)
     }
@@ -76,11 +78,13 @@ class SignUpViewController: UIViewController {
                     let path = "Profile/\(uid)"
                     
                     ImageUploader.uploadImage(image: profilePic, name: path) { url in
-                        let newUser = UserData(username: username, email: email, profileURL: url, uid: uid)
-                        NetworkManager.shared.addUser(user: newUser)
-                        self.delegate?.userAuthenticated()
-                        self.dismiss(animated: true)
+                        
                     }
+                    
+                    let newUser = UserData(username: username, email: email, profileURL: path, uid: uid)
+                    NetworkManager.shared.addUser(user: newUser)
+                    self.delegate?.userAuthenticated()
+                    self.dismiss(animated: true)
                 }
             }
         }
@@ -90,6 +94,12 @@ class SignUpViewController: UIViewController {
         usernameTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         emailTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         passwordTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleOrientationChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+    
+    @objc func handleOrientationChange() {
+        scrollView.contentSize = CGSize(width: view.frame.width, height: 600)
     }
     
     @objc func textDidChange(sender: UITextField) {
@@ -167,28 +177,35 @@ class SignUpViewController: UIViewController {
         bottomStack.distribution = .equalCentering
         bottomStack.alignment = .center
         
-        view.addSubview(topStack)
-        view.addSubview(bottomStack)
-        view.addSubview(inputFieldStack)
+        view.addSubview(scrollView)
+        scrollView.addSubview(topStack)
+        scrollView.addSubview(bottomStack)
+        scrollView.addSubview(inputFieldStack)
         
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         topStack.translatesAutoresizingMaskIntoConstraints = false
         bottomStack.translatesAutoresizingMaskIntoConstraints = false
         inputFieldStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             
-            topStack.leftAnchor.constraint(equalTo: view.leftAnchor),
-            topStack.rightAnchor.constraint(equalTo: view.rightAnchor),
-            topStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            scrollView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            scrollView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+ 
+            topStack.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            topStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 20),
             
-            bottomStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            bottomStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
-            inputFieldStack.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
-            inputFieldStack.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
+            inputFieldStack.leftAnchor.constraint(equalTo: scrollView.safeAreaLayoutGuide.leftAnchor, constant: 20),
+            inputFieldStack.rightAnchor.constraint(equalTo: scrollView.safeAreaLayoutGuide.rightAnchor, constant: -20),
             inputFieldStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 20),
             
+            bottomStack.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            bottomStack.topAnchor.constraint(equalTo: inputFieldStack.bottomAnchor, constant: 10),
+            
         ])
+        scrollView.contentSize = CGSize(width: view.frame.width, height: 600)
     }
 }
 
