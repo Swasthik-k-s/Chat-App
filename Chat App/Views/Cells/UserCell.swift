@@ -66,9 +66,22 @@ class UserCell: UICollectionViewCell {
     func configureChat() {
         guard let chat = chat else { return }
         
-        let otherUser = chat.users[chat.otherUser!]
-        
-        nameLabel.text = otherUser.username
+        if chat.isGroupChat {
+            nameLabel.text = chat.groupName
+            NetworkManager.shared.downloadImageWithPath(path: chat.groupIconPath!) { image in
+                DispatchQueue.main.async {
+                    self.profileImage.image = image
+                }
+            }
+        } else {
+            let otherUser = chat.users[chat.otherUser!]
+            nameLabel.text = otherUser.username
+            NetworkManager.shared.downloadImageWithPath(path: "Profile/\(otherUser.uid)") { image in
+                DispatchQueue.main.async {
+                    self.profileImage.image = image
+                }
+            }
+        }
         
         lastMessageItem = chat.lastMessage
         
@@ -80,12 +93,6 @@ class UserCell: UICollectionViewCell {
             dateLabel.text = ""
         } else {
             dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
-        }
-        
-        NetworkManager.shared.downloadImageWithPath(path: "Profile/\(otherUser.uid)") { image in
-            DispatchQueue.main.async {
-                self.profileImage.image = image
-            }
         }
     }
     

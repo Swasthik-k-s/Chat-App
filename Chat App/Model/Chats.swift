@@ -31,21 +31,8 @@ struct Chats: Comparable {
     var lastMessage: Message?
     var messages: [Message]?
     var otherUser: Int?
-    var unSeenCount: Int?
+    var isGroupChat: Bool
+    var groupName: String?
+    var groupIconPath: String?
     
-//    var userDictionary: {
-//        return [
-//            "username": users[],
-//            "email": email,
-//            "profileURL": profileURL,
-//            "uid": uid
-//        ]
-//    }
-//    var dictionary: [String: Any] {
-//        return [
-//            "users": userDictionary,
-//            "lastMessage": lastMessage ?? Message(sender: "", content: "", time: nil, seen: nil),
-//            "messages": messages ?? [Message](),
-//        ]
-//    }
 }

@@ -54,15 +54,16 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         
         NSLayoutConstraint.activate([
             groupChatButton.heightAnchor.constraint(equalToConstant: 50),
-//            groupChatButton.widthAnchor.constraint(equalToConstant: 60),
-//            groupChatButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20),
-            groupChatButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            groupChatButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10),
+            groupChatButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10),
             groupChatButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
         ])
     }
     
     @objc func handleGroupChat() {
-        
+        let vc = CreateGroupChatViewController()
+        vc.currentUser = currentUser
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func configureCollectionView() {
@@ -137,6 +138,7 @@ extension AddChatViewController: UICollectionViewDataSource {
         vcArray?.removeLast()
         
         for chat in chats {
+            if chat.isGroupChat { continue }
             var currentChat = chat
             let uid1 = chat.users[0].uid
             let uid2 = chat.users[1].uid
@@ -154,9 +156,9 @@ extension AddChatViewController: UICollectionViewDataSource {
             
         }
         print("New Chat")
-        NetworkManager.shared.addChat(user1: currentUser!, user2: selectedUser, id: id)
+        NetworkManager.shared.addChat(users: [currentUser!, selectedUser], id: id, isGroupChat: false, groupName: "", groupIconPath: "")
         
-        chatVC.chat = Chats(chatId: id, users: users, lastMessage: nil, messages: [], otherUser: 1)
+        chatVC.chat = Chats(chatId: id, users: users, lastMessage: nil, messages: [], otherUser: 1, isGroupChat: false)
         
         vcArray?.append(chatVC)
         navigationController?.setViewControllers(vcArray!, animated: true)

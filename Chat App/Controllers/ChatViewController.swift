@@ -13,9 +13,8 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     var messages: [Message] = []
     let messageCellIdentifier = "messageCell"
     let imageCellIdentifier = "imageCell"
-    var otherUser: UserData!
     var currentUser: UserData!
-    var chatId: String?
+    let uid = NetworkManager.shared.getUID()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,17 +103,22 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     func configureUI() {
         
         view.backgroundColor = ColorConstants.customWhite
-        chatId = "\(chat.users[0].uid)_\(chat.users[1].uid)"
+        var name: String
         
-        if chat.otherUser == 0 {
-            otherUser = chat.users[0]
-            currentUser = chat.users[1]
+        NetworkManager.shared.fetchUser(uid: uid!, completion: { user in
+            self.currentUser = user
+        })
+        if chat.isGroupChat {
+            name = chat.groupName!
         } else {
-            otherUser = chat.users[1]
-            currentUser = chat.users[0]
+            if chat.users[0].uid == uid {
+                name = chat.users[1].username
+            } else {
+                name = chat.users[0].username
+            }
         }
         
-        navigationItem.title = otherUser.username
+        navigationItem.title = name
         navigationItem.backButtonTitle = ""
     }
     
@@ -166,7 +170,7 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         if textField.text != "" {
             let newMessage = Message(sender: currentUser.uid, content: textField.text!, time: Date(), seen: false, imagePath: "")
             
-            NetworkManager.shared.addMessage(lastMessage: newMessage, id: chatId!)
+            NetworkManager.shared.addMessage(lastMessage: newMessage, id: chat.chatId!)
             
             textField.text = ""
         }
@@ -208,13 +212,13 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     }
     
     func uploadPhoto(image: UIImage) {
-        let path = "Chats/\(chatId!)/\(UUID())"
+        let path = "Chats/\(chat.chatId!)/\(UUID())"
         let newMessage = Message(sender: self.currentUser.uid, content: "", time: Date(), seen: false, imagePath: path)
 
         ImageUploader.uploadImage(image: image, name: path) { url in
             
         }
-        NetworkManager.shared.addMessage(lastMessage: newMessage, id: self.chatId!)
+        NetworkManager.shared.addMessage(lastMessage: newMessage, id: self.chat.chatId!)
     }
 }
 
