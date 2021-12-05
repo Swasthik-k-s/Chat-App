@@ -33,6 +33,16 @@ struct NetworkManager {
         Auth.auth().createUser(withEmail: email, password: password, completion: completion)
     }
     
+    func resetPassword(email: String, completion: @escaping(String) -> Void) {
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            if let error = error {
+                completion(error.localizedDescription)
+                return
+            }
+            completion("Sent")
+        }
+    }
+    
     func addUser(user: UserData) {
         database.child("Users").child(user.uid).setValue(user.dictionary)
     }

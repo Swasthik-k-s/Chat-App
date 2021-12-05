@@ -32,10 +32,37 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
         
     }
     
+    let groupChatButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Create Group Chat", for: .normal)
+        button.backgroundColor = ColorConstants.tealGreen
+        button.tintColor = ColorConstants.white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.layer.cornerRadius = 25
+        button.addTarget(self, action: #selector(handleGroupChat), for: .touchUpInside)
+        button.titleLabel?.font = FontConstants.bold1
+        return button
+    }()
+    
     func configureUI() {
         view.backgroundColor = .white
         navigationItem.title = "Select User"
         navigationItem.backButtonTitle = ""
+        
+        view.addSubview(groupChatButton)
+        view.bringSubviewToFront(groupChatButton)
+        
+        NSLayoutConstraint.activate([
+            groupChatButton.heightAnchor.constraint(equalToConstant: 50),
+//            groupChatButton.widthAnchor.constraint(equalToConstant: 60),
+//            groupChatButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20),
+            groupChatButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            groupChatButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
+        ])
+    }
+    
+    @objc func handleGroupChat() {
+        
     }
     
     func configureCollectionView() {

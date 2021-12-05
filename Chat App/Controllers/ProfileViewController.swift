@@ -24,6 +24,7 @@ class ProfileViewController: UIViewController {
     let username = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
     let email = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
     let uid = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
+    let resetButton = CustomButton(title: "Reset Password", color: ColorConstants.tealGreen, textColor: ColorConstants.white, font: FontConstants.bold1, cornerRadius: 10)
     
     func configureUI() {
         view.backgroundColor = .white
@@ -37,27 +38,36 @@ class ProfileViewController: UIViewController {
         profileImage.contentMode = .scaleAspectFill
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(presentImagePicker))
+        resetButton.addTarget(self, action: #selector(handleReset), for: .touchUpInside)
         
         profileImage.addGestureRecognizer(tapGesture)
         
-        let userDataStack = UIStackView(arrangedSubviews: [username, email, uid])
+        let userDataStack = UIStackView(arrangedSubviews: [username, email])
         userDataStack.axis = .vertical
         userDataStack.spacing = 20
         
         view.addSubview(profileImage)
         view.addSubview(userDataStack)
+        view.addSubview(resetButton)
         
         profileImage.translatesAutoresizingMaskIntoConstraints = false
         userDataStack.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             profileImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             //            profileImage.rightAnchor.constraint(equalTo: view.rightAnchor),
             profileImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             
+            
             userDataStack.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
             userDataStack.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
             userDataStack.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 20),
+            
+            resetButton.topAnchor.constraint(equalTo: userDataStack.bottomAnchor, constant: 20),
+            resetButton.heightAnchor.constraint(equalToConstant: 50),
+            resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            resetButton.widthAnchor.constraint(equalToConstant: 200),
         ])
     }
     
@@ -70,7 +80,8 @@ class ProfileViewController: UIViewController {
             
             self.currentUser = user
             
-            NetworkManager.shared.downloadImage(url: user.profileURL) { image in
+            let path = "Profile/\(user.uid)"
+            NetworkManager.shared.downloadImageWithPath(path: path) { image in
                 DispatchQueue.main.async {
                     self.profileImage.image = image
                 }
@@ -83,6 +94,21 @@ class ProfileViewController: UIViewController {
         picker.allowsEditing = true
         picker.delegate = self
         present(picker, animated: true, completion: nil)
+    }
+    
+    @objc func handleReset() {
+        NetworkManager.shared.resetPassword(email: currentUser!.email) { result in
+            if result == "Sent" {
+                self.showAlert(title: "Password Reset Email Sent", message: "A Password Reset link has been sent to your Email")
+//                let isSignOut = NetworkManager.shared.signout()
+//                if isSignOut {
+//                    HomeViewController().presentLoginScreen()
+//                }
+//
+            } else {
+                self.showAlert(title: "Failed", message: "Error while reseting the Password. Try Again Later")
+            }
+        }
     }
     
     func uploadNewProfile(image: UIImage) {
