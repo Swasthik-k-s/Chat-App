@@ -28,6 +28,7 @@ class InputFieldView: UIView {
         iv.translatesAutoresizingMaskIntoConstraints = false
         iv.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         iv.leftAnchor.constraint(equalTo: leftAnchor, constant: 10).isActive = true
+        iv.contentMode = .scaleAspectFit
         
         //        let textField = CustomTextField(placeholder: placeHolder, color: color)
         addSubview(textField)

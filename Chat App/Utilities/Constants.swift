@@ -49,7 +49,7 @@ struct ImageConstants {
     static let unseen = UIImage(systemName: "checkmark.circle")
     static let seen = UIImage(systemName: "checkmark.circle.fill")
     static let picture = UIImage(systemName: "photo.fill")
-    
+    static let groupPhoto = UIImage(systemName: "person.3.fill")
 }
 
 struct MessageConstants {
@@ -57,6 +57,9 @@ struct MessageConstants {
     static let passwordInvalid = "Password is Invalid. Password must contain atleast 8 character with 1 number and 1 special character"
     static let usernameInvalid = "User Name must be atleast 3 Characters"
     static let profilePictureInvalid = "Please Upload a Profile Picture"
+    static let groupPhotoInvalid = "Please Upload a Group Picture"
+    static let groupNameInvalid = "Please Enter a Valid Group Name"
+    static let minimumGroupMemberError = "Please Select Atleast 1 User"
 }
 
 struct menuItemConstants {
