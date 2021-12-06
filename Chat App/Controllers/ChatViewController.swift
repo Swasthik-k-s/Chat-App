@@ -102,6 +102,12 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     
     func configureUI() {
         
+        let info = UIBarButtonItem(image: ImageConstants.info, style: .plain, target: self, action: #selector(handleInfo))
+        
+        if chat.isGroupChat {
+            navigationItem.rightBarButtonItems = [info]
+        }
+        
         view.backgroundColor = ColorConstants.customWhite
         var name: String
         
@@ -131,6 +137,14 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     override var canBecomeFirstResponder: Bool {
             return true
         }
+    
+    @objc func handleInfo() {
+        var usersString = ""
+        for user in chat.users {
+            usersString = "\(usersString) | \(user.username)"
+        }
+        showAlert(title: "Number of Group Members: \(chat.users.count)", message: usersString)
+    }
     
     @objc func handlePic() {
         let picker = UIImagePickerController()
@@ -189,11 +203,13 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         if messages[indexPath.row].imagePath == "" {
             let cell = tableView.dequeueReusableCell(withIdentifier: messageCellIdentifier, for: indexPath) as! MessageTableCell
             cell.messageItem = messages[indexPath.row]
+            cell.usersList = chat.users
             cell.backgroundColor = ColorConstants.customWhite
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: imageCellIdentifier, for: indexPath) as! ImageTableCell
             cell.messageItem = messages[indexPath.row]
+            cell.usersList = chat.users
             NetworkManager.shared.downloadImageWithPath(path: messages[indexPath.row].imagePath, completion: { image in
                 DispatchQueue.main.async {
                     cell.chatImage.image = image
