@@ -50,6 +50,7 @@ struct ImageConstants {
     static let seen = UIImage(systemName: "checkmark.circle.fill")
     static let picture = UIImage(systemName: "photo.fill")
     static let groupPhoto = UIImage(systemName: "person.3.fill")
+    static let info = UIImage(systemName: "info.circle.fill")
 }
 
 struct MessageConstants {
