@@ -86,13 +86,20 @@ class UserCell: UICollectionViewCell {
         lastMessageItem = chat.lastMessage
         
         let dateFormatter = DateFormatter()
-        //        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
-        dateFormatter.dateFormat = "hh:mm:a"
+        dateFormatter.dateFormat = "dd/MM/YY"
+//        dateFormatter.dateFormat = "hh:mm:a"
         
         if chat.lastMessage == nil {
             dateLabel.text = ""
         } else {
-            dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
+            let chatDate = dateFormatter.string(from: chat.lastMessage!.time)
+            let currentDate = dateFormatter.string(from: Date())
+            if chatDate.compare(currentDate) == .orderedSame {
+                dateFormatter.dateFormat = "hh:mm:a"
+                dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
+            } else {
+                dateLabel.text = dateFormatter.string(from: chat.lastMessage!.time)
+            }
         }
     }
     
@@ -123,7 +130,14 @@ class UserCell: UICollectionViewCell {
     }
     
     func checkLastMessage() {
-        messageLabel.text = lastMessageItem?.content
+        if lastMessageItem?.content == "" {
+            messageLabel.text = "Photo"
+            messageLabel.textColor = ColorConstants.blue
+        } else {
+            messageLabel.text = lastMessageItem?.content
+            messageLabel.textColor = ColorConstants.grey
+        }
+        
     }
     
     func configureCell() {
@@ -132,6 +146,7 @@ class UserCell: UICollectionViewCell {
         editView.addGestureRecognizer(tapGesture)
         
         messageLabel.numberOfLines = 1
+        nameLabel.numberOfLines = 1
         profileImage.backgroundColor = ColorConstants.grey
         profileImage.contentMode = .scaleAspectFill
         profileImage.clipsToBounds = true

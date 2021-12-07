@@ -15,6 +15,7 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
     let imageCellIdentifier = "imageCell"
     var currentUser: UserData!
     let uid = NetworkManager.shared.getUID()
+    var finalArray: [[Message]] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -153,15 +154,45 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         present(picker, animated: true, completion: nil)
     }
     
+    func dateToStringConvertor(date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd/MM/YYYY"
+        
+        return dateFormatter.string(from: date)
+    }
+    
     func fetchChats() {
         messages = []
+        finalArray = []
+        
         NetworkManager.shared.fetchMessages(chatId: chat.chatId!) { messages in
             self.messages = messages
-            print(messages)
-    
+
+            var msgDate: String? = ""
+            var dateMsgArray: [Message] = []
+            self.finalArray = []
+            for message in messages {
+                if msgDate == "" {
+                    msgDate = self.dateToStringConvertor(date: message.time)
+                    dateMsgArray.append(message)
+                } else {
+                    if msgDate == self.dateToStringConvertor(date: message.time) {
+                        dateMsgArray.append(message)
+                    } else {
+                        self.finalArray.append(dateMsgArray)
+                        msgDate = ""
+                        dateMsgArray.removeAll()
+                        dateMsgArray.append(message)
+                    }
+                }
+            }
+            
+            self.finalArray.append(dateMsgArray)
+            
             DispatchQueue.main.async {
                 self.tableView.reloadData()
-                self.tableView.scrollToRow(at: [0, messages.count - 1], at: .bottom, animated: false)
+//                self.tableView.scrollToRow(at: [0, self.messages.count - 1], at: .bottom, animated: false)
+                self.tableView.scrollToRow(at: [self.finalArray.count - 1, self.finalArray[self.finalArray.count - 1].count - 1], at: .bottom, animated: false)
             }
         }
     }
@@ -170,7 +201,6 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         tableView.isUserInteractionEnabled = true
         tableView.keyboardDismissMode = .onDrag
         tableView.separatorStyle = .none
-//        tableView.contentInset = UIEdgeInsets(top: 5, left: 0, bottom: 70 , right: 0)
         tableView.register(MessageTableCell.self, forCellReuseIdentifier: messageCellIdentifier)
         tableView.register(ImageTableCell.self, forCellReuseIdentifier: imageCellIdentifier)
         tableView.alwaysBounceVertical = true
@@ -194,15 +224,49 @@ class ChatViewController: UITableViewController, UITextViewDelegate {
         navigationController?.popViewController(animated: true)
     }
     
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return finalArray.count
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let date = finalArray[section].first!.time
+
+        let dateView = UIView()
+        dateView.layer.cornerRadius = 5
+
+        let dateLabel = UILabel()
+        dateLabel.textAlignment = .center
+        dateLabel.backgroundColor = ColorConstants.blue
+        dateLabel.textColor = .black
+        dateLabel.font = FontConstants.bold1
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        dateLabel.text = dateToStringConvertor(date: date)
+        dateLabel.layer.masksToBounds = true
+
+        dateView.addSubview(dateLabel)
+
+        dateLabel.centerYAnchor.constraint(equalTo: dateView.centerYAnchor).isActive = true
+        dateLabel.centerXAnchor.constraint(equalTo: dateView.centerXAnchor).isActive = true
+
+        let contentSize = dateLabel.intrinsicContentSize
+        dateLabel.widthAnchor.constraint(equalToConstant: contentSize.width + 20).isActive = true
+        dateLabel.heightAnchor.constraint(equalToConstant: contentSize.height + 10).isActive = true
+        dateLabel.layer.cornerRadius = 10
+
+        return dateView
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+//        return messages.count
+        return finalArray[section].count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if messages[indexPath.row].imagePath == "" {
             let cell = tableView.dequeueReusableCell(withIdentifier: messageCellIdentifier, for: indexPath) as! MessageTableCell
-            cell.messageItem = messages[indexPath.row]
+//            cell.messageItem = messages[indexPath.row]
+            cell.messageItem = finalArray[indexPath.section][indexPath.row]
             cell.usersList = chat.users
             cell.backgroundColor = ColorConstants.customWhite
             return cell
