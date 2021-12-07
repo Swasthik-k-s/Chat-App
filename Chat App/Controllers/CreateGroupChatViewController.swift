@@ -67,7 +67,7 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
             }
             NetworkManager.shared.addChat(users: usersList, id: chatID, isGroupChat: true, groupName: groupName.text, groupIconPath: groupPhotoPath)
             
-            chatVC.chat = Chats(chatId: groupPhotoPath, users: usersList, lastMessage: nil, messages: [], isGroupChat: true, groupName: groupName.text, groupIconPath: groupPhotoPath)
+            chatVC.chat = Chats(chatId: chatID, users: usersList, lastMessage: nil, messages: [], isGroupChat: true, groupName: groupName.text, groupIconPath: groupPhotoPath)
             
             vcArray?.append(chatVC)
             navigationController?.setViewControllers(vcArray!, animated: true)
