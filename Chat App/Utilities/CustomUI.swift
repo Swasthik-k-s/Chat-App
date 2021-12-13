@@ -11,16 +11,16 @@ import UIKit
 class InputFieldView: UIView {
     init(image: UIImage, color: UIColor, textField: UITextField) {
         super.init(frame: .zero)
-        backgroundColor = .white
+        backgroundColor = ColorConstants.textField
         heightAnchor.constraint(equalToConstant: 50).isActive = true
         layer.borderColor = ColorConstants.customRed.cgColor
         layer.borderWidth = 1
         layer.cornerRadius = 5
         translatesAutoresizingMaskIntoConstraints = false
-        layer.shadowColor = ColorConstants.darkTealGreen.cgColor
-        layer.shadowRadius = 10
-        layer.shadowOpacity = 0.3
-        layer.shadowOffset.height = -3
+//        layer.shadowColor = ColorConstants.green.cgColor
+//        layer.shadowRadius = 10
+//        layer.shadowOpacity = 0.3
+//        layer.shadowOffset.height = -3
         
         let iv = CustomImageView(image: image, height: 24, width: 24, cornerRadius: 0, color: color)
         addSubview(iv)
@@ -104,8 +104,9 @@ class CustomTextField: UITextField {
         
         font = FontConstants.normal1
         textColor = color
-        self.placeholder = placeholder
+//        self.placeholder = placeholder
         autocorrectionType = .no
+        attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [NSAttributedString.Key.foregroundColor: ColorConstants.titleText])
     }
     
     required init?(coder: NSCoder) {

@@ -9,7 +9,7 @@ import UIKit
 
 class ProfileViewController: UIViewController {
     
-    let userid = NetworkManager.shared.getUID()!
+//    let userid = NetworkManager.shared.getUID()!
     var currentUser: UserData?
     
     override func viewDidLoad() {
@@ -19,20 +19,19 @@ class ProfileViewController: UIViewController {
         fetchUserData()
     }
     
-    let profileImage = CustomImageView(image: ImageConstants.person!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.tealGreen)
+    let profileImage = CustomImageView(image: ImageConstants.person!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.green)
     
-    let username = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
-    let email = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
-    let uid = CustomLabel(text: "", color: ColorConstants.tealGreen, font: FontConstants.bold1)
-    let resetButton = CustomButton(title: "Reset Password", color: ColorConstants.tealGreen, textColor: ColorConstants.white, font: FontConstants.bold1, cornerRadius: 10)
+    let username = CustomLabel(text: "", color: ColorConstants.green, font: FontConstants.bold1)
+    let email = CustomLabel(text: "", color: ColorConstants.green, font: FontConstants.bold1)
+    let resetButton = CustomButton(title: "Reset Password", color: ColorConstants.green, textColor: ColorConstants.icon, font: FontConstants.bold1, cornerRadius: 10)
     
     func configureUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = ColorConstants.viewBackground
         navigationItem.title = "Profile"
         navigationItem.backButtonTitle = ""
         
         profileImage.layer.borderWidth = 1
-        profileImage.layer.borderColor = ColorConstants.tealGreen.cgColor
+        profileImage.layer.borderColor = ColorConstants.green.cgColor
         profileImage.clipsToBounds = true
         profileImage.isUserInteractionEnabled = true
         profileImage.contentMode = .scaleAspectFill
@@ -73,10 +72,9 @@ class ProfileViewController: UIViewController {
     
     func fetchUserData() {
         print("Fetching")
-        NetworkManager.shared.fetchUser(uid: userid) { user in
+        NetworkManager.shared.fetchUser() { user in
             self.username.text = "Username: \(user.username)"
             self.email.text = "Email: \(user.email)"
-            self.uid.text = user.uid
             
             self.currentUser = user
             
@@ -112,7 +110,9 @@ class ProfileViewController: UIViewController {
     }
     
     func uploadNewProfile(image: UIImage) {
-        let path = "Profile/\(userid)"
+        guard let uid = NetworkManager.shared.getUID() else { return }
+        let path = "Profile/\(uid)"
+        
         ImageUploader.uploadImage(image: image, name: path) { url in
             self.currentUser?.profileURL = url
             
@@ -127,7 +127,7 @@ extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationCo
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let imageSelected = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             profileImage.image = imageSelected
-            profileImage.layer.borderColor = ColorConstants.tealGreen.cgColor
+            profileImage.layer.borderColor = ColorConstants.green.cgColor
             uploadNewProfile(image: imageSelected)
         }
         

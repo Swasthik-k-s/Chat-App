@@ -54,15 +54,14 @@ extension UIViewController {
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        appearance.backgroundColor = ColorConstants.tealGreen
-        appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        appearance.backgroundColor = ColorConstants.navBar
+        appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: ColorConstants.navBarTitle]
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
         navigationController?.navigationBar.barStyle = .black
-        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.tintColor = ColorConstants.icon
     }
 }
 

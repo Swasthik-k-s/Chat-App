@@ -47,7 +47,9 @@ struct NetworkManager {
         database.child("Users").child(user.uid).setValue(user.dictionary)
     }
     
-    func fetchUser(uid: String, completion: @escaping(UserData) -> Void) {
+    func fetchUser(completion: @escaping(UserData) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
         database.child("Users").child(uid).observe(.value) { snapshot in
             if let dictionary = snapshot.value as? [String: Any] {
                 let user = createUserObject(dictionary: dictionary)

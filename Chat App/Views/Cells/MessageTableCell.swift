@@ -22,7 +22,7 @@ class MessageTableCell: UITableViewCell {
     var message: UILabel = {
         let label = UILabel()
         label.text = ""
-        label.textColor = ColorConstants.customWhite
+        label.textColor = ColorConstants.titleText
         label.numberOfLines = 0
         label.textColor = .white
         label.textAlignment = .left

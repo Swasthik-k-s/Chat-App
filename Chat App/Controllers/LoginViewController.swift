@@ -13,35 +13,35 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorConstants.viewBackground
         configureNotificationObserver()
         configureUI()
         
     }
     
-    let appImage = CustomImageView(image: ImageConstants.appIcon!, height: 100, width: 100, cornerRadius: 0, color: ColorConstants.tealGreen)
-    let appLabel = CustomLabel(text: "Welcome to Chat App", color: ColorConstants.tealGreen, font: FontConstants.bold3)
+    let appImage = CustomImageView(image: ImageConstants.appIcon!, height: 100, width: 100, cornerRadius: 0, color: ColorConstants.green)
+    let appLabel = CustomLabel(text: "Welcome to Chat App", color: ColorConstants.green, font: FontConstants.bold3)
     
-    let bottomText = CustomLabel(text: "Don't have an Account?", color: ColorConstants.tealGreen, font: FontConstants.normal1)
-    let signUpButton = CustomButton(title: "Sign Up", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold2, cornerRadius: 0)
+    let bottomText = CustomLabel(text: "Don't have an Account?", color: ColorConstants.green, font: FontConstants.normal1)
+    let signUpButton = CustomButton(title: "Sign Up", color: .clear, textColor: ColorConstants.green, font: FontConstants.bold2, cornerRadius: 0)
     
-    let forgotPasswordButton = CustomButton(title: "Forgot Password", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold1, cornerRadius: 0)
+    let forgotPasswordButton = CustomButton(title: "Forgot Password", color: .clear, textColor: ColorConstants.green, font: FontConstants.bold1, cornerRadius: 0)
     
-    let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.tealGreen)
-    let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.tealGreen)
+    let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.titleText)
+    let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.titleText)
     
     lazy var emailContainer: InputFieldView = {
         emailTextField.keyboardType = .emailAddress
-        return InputFieldView(image: ImageConstants.mail!, color: ColorConstants.tealGreen, textField: emailTextField)
+        return InputFieldView(image: ImageConstants.mail!, color: ColorConstants.green, textField: emailTextField)
     }()
     
     lazy var passwordContainer: InputFieldView = {
         passwordTextField.isSecureTextEntry = true
         passwordTextField.keyboardType = .default
-        return InputFieldView(image: ImageConstants.password!, color: ColorConstants.tealGreen, textField: passwordTextField)
+        return InputFieldView(image: ImageConstants.password!, color: ColorConstants.green, textField: passwordTextField)
     }()
     
-    let loginButton = CustomButton(title: "Login", color: ColorConstants.darkTealGreen, textColor: .white, font: FontConstants.bold1, cornerRadius: 25)
+    let loginButton = CustomButton(title: "Login", color: ColorConstants.green, textColor: ColorConstants.icon, font: FontConstants.bold1, cornerRadius: 25)
     
     let scrollView = UIScrollView()
     
@@ -58,16 +58,27 @@ class LoginViewController: UIViewController {
         let fieldError = validateLogin(email: email, password: password)
         
         if fieldError != nil {
-            showAlert(title: "Invalid", message: fieldError!)
+            let action = {
+                self.showAlert(title: "Invalid", message: fieldError!)
+            }
+            loginButton.buttonAnimation(effectType: "shake", delay: 1.0, action: action)
+            
         } else {
             NetworkManager.shared.login(withEmail: email, password: password) { [weak self] result, error in
                 guard let self = self else { return }
                 
                 if error != nil {
-                    self.showAlert(title: "Failed", message: error!.localizedDescription)
+                    let action = {
+                        self.showAlert(title: "Failed", message: error!.localizedDescription)
+                    }
+                    self.loginButton.buttonAnimation(effectType: "shake", delay: 1.0, action: action)
+                    
                 } else {
-                    self.delegate?.userAuthenticated()
-                    self.dismiss(animated: true, completion: nil)
+                    let action = {
+                        self.delegate?.userAuthenticated()
+                        self.dismiss(animated: true, completion: nil)
+                    }
+                    self.loginButton.buttonAnimation(effectType: "flash", delay: 2.0, action: action)
                 }
             }
         }
@@ -90,10 +101,10 @@ class LoginViewController: UIViewController {
     
     @objc func textDidChange(sender: UITextField) {
         if sender == emailTextField {
-            emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
         if sender == passwordTextField {
-            passwordContainer.layer.borderColor = passwordValidation(password: passwordTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            passwordContainer.layer.borderColor = passwordValidation(password: passwordTextField.text!) ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
     }
     
