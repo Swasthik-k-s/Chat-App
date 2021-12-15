@@ -24,19 +24,19 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
         fetchAllUser()
     }
     
-    let groupPhotoLabel = CustomLabel(text: "Group Photo", color: ColorConstants.tealGreen, font: FontConstants.bold1)
+    let groupPhotoLabel = CustomLabel(text: "Group Photo", color: ColorConstants.green, font: FontConstants.bold1)
     
-    let groupPhoto = CustomImageView(image: ImageConstants.groupPhoto!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.tealGreen)
+    let groupPhoto = CustomImageView(image: ImageConstants.groupPhoto!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.green)
     
-    let groupNameLabel = CustomLabel(text: "Group Name", color: ColorConstants.tealGreen, font: FontConstants.bold1)
+    let groupNameLabel = CustomLabel(text: "Group Name", color: ColorConstants.green, font: FontConstants.bold1)
     
-    let groupName = CustomTextField(placeholder: "Enter Group Name", color: ColorConstants.tealGreen)
+    let groupName = CustomTextField(placeholder: "Enter Group Name", color: ColorConstants.titleText)
     
     lazy var groupNameContainer: InputFieldView = {
-        return InputFieldView(image: ImageConstants.groupPhoto!, color: ColorConstants.tealGreen, textField: groupName)
+        return InputFieldView(image: ImageConstants.groupPhoto!, color: ColorConstants.green, textField: groupName)
     }()
     
-    let selectUsersLabel = CustomLabel(text: "Select Users", color: ColorConstants.tealGreen, font: FontConstants.bold1)
+    let selectUsersLabel = CustomLabel(text: "Select Users", color: ColorConstants.green, font: FontConstants.bold1)
     
     @objc func presentImagePicker() {
         let picker = UIImagePickerController()
@@ -62,10 +62,11 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
                 let user = users[indexPath.row]
                 usersList.append(user)
             }
-            ImageUploader.uploadImage(image: groupPhoto.image!, name: groupPhotoPath) { url in
-                
+            ImageUploader.uploadImage(image: groupPhoto.image!, name: groupPhotoPath) { result in
+                if result == "Uploaded" {
+                    NetworkManager.shared.addChat(users: usersList, id: chatID, isGroupChat: true, groupName: self.groupName.text, groupIconPath: groupPhotoPath)
+                }
             }
-            NetworkManager.shared.addChat(users: usersList, id: chatID, isGroupChat: true, groupName: groupName.text, groupIconPath: groupPhotoPath)
             
             chatVC.chat = Chats(chatId: chatID, users: usersList, lastMessage: nil, messages: [], isGroupChat: true, groupName: groupName.text, groupIconPath: groupPhotoPath)
             
@@ -79,7 +80,7 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
     
     @objc func textDidChange(sender: UITextField) {
         if sender == groupName {
-            groupNameContainer.layer.borderColor = groupName.text!.count > 2 ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            groupNameContainer.layer.borderColor = groupName.text!.count > 2 ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
     }
     
@@ -89,7 +90,7 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
         let createButton = UIBarButtonItem(title: "Create", style: .plain, target: self, action: #selector(handleCreate))
         navigationItem.rightBarButtonItems = [createButton]
         
-        view.backgroundColor = .white
+        view.backgroundColor = ColorConstants.viewBackground
         navigationItem.title = "Create Group Chat"
         navigationItem.backButtonTitle = ""
         
@@ -160,6 +161,7 @@ class CreateGroupChatViewController: UIViewController, UICollectionViewDelegate 
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(UserCell.self, forCellWithReuseIdentifier: cellIdentifier)
+        collectionView.backgroundColor = ColorConstants.viewBackground
     }
     
     func fetchAllUser() {
@@ -185,11 +187,10 @@ extension CreateGroupChatViewController: UICollectionViewDataSource {
         cell.nameLabel.text = user.email
         cell.messageLabel.text = user.username
         cell.dateLabel.isHidden = true
-        cell.selectButton.isHidden = true
         if selectedUsers.contains(indexPath) {
-            cell.backgroundColor = ColorConstants.tealGreen
+            cell.backgroundColor = ColorConstants.popupView
         } else {
-            cell.backgroundColor = ColorConstants.customWhite
+            cell.backgroundColor = ColorConstants.viewBackground
         }
         
         
@@ -205,10 +206,10 @@ extension CreateGroupChatViewController: UICollectionViewDataSource {
         
         if selectedUsers.contains(indexPath) {
             selectedUsers.remove(at: selectedUsers.firstIndex(of: indexPath)!)
-            selectedCell.backgroundColor = ColorConstants.customWhite
+            selectedCell.backgroundColor = ColorConstants.viewBackground
         } else {
             selectedUsers.append(indexPath)
-            selectedCell.backgroundColor = ColorConstants.dimTealGreen
+            selectedCell.backgroundColor = ColorConstants.popupView
         }
     }
 }
@@ -219,7 +220,7 @@ extension CreateGroupChatViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 1
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
@@ -231,7 +232,7 @@ extension CreateGroupChatViewController: UIImagePickerControllerDelegate, UINavi
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let imageSelected = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             groupPhoto.image = imageSelected
-            groupPhoto.layer.borderColor = ColorConstants.tealGreen.cgColor
+            groupPhoto.layer.borderColor = ColorConstants.green.cgColor
             groupPhoto.contentMode = .scaleAspectFill
         }
         

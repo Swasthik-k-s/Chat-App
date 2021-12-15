@@ -64,10 +64,8 @@ class ImageTableCell: UITableViewCell {
             messageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
 
             senderName.leftAnchor.constraint(equalTo: messageView.leftAnchor, constant: 10),
-//            senderName.widthAnchor.constraint(equalToConstant: 80),
             
             chatImage.centerXAnchor.constraint(equalTo: messageView.centerXAnchor),
-//            chatImage.topAnchor.constraint(equalTo: messageView.topAnchor, constant: 10),
             
             time.centerXAnchor.constraint(equalTo: messageView.centerXAnchor),
             time.topAnchor.constraint(equalTo: chatImage.bottomAnchor, constant: 5),
@@ -88,6 +86,7 @@ class ImageTableCell: UITableViewCell {
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
         image.image = ImageConstants.picture
+        image.tintColor = ColorConstants.blue
         return image
     }()
     

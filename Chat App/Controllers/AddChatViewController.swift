@@ -35,8 +35,8 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
     let groupChatButton: UIButton = {
         let button = UIButton()
         button.setTitle("Create Group Chat", for: .normal)
-        button.backgroundColor = ColorConstants.tealGreen
-        button.tintColor = ColorConstants.white
+        button.backgroundColor = ColorConstants.lightGreen
+        button.tintColor = ColorConstants.icon
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 25
         button.addTarget(self, action: #selector(handleGroupChat), for: .touchUpInside)
@@ -45,7 +45,7 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
     }()
     
     func configureUI() {
-        view.backgroundColor = .white
+        
         navigationItem.title = "Select User"
         navigationItem.backButtonTitle = ""
         
@@ -68,7 +68,7 @@ class AddChatViewController: UIViewController, UICollectionViewDelegate {
     
     func configureCollectionView() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: UICollectionViewFlowLayout())
-        
+        collectionView.backgroundColor = ColorConstants.viewBackground
         view.addSubview(collectionView)
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -113,11 +113,12 @@ extension AddChatViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! UserCell
         
         let user = inSearchMode ? searchUsers[indexPath.row] : users[indexPath.row]
-        
+        cell.profileImage.image = ImageConstants.person
         cell.nameLabel.text = user.email
         cell.messageLabel.text = user.username
         cell.dateLabel.isHidden = true
-        cell.selectButton.isHidden = true
+        cell.backgroundColor = ColorConstants.viewBackground
+//        cell.selectButton.isHidden = true
         
         let uid = user.uid
         
@@ -171,7 +172,7 @@ extension AddChatViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 1
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
@@ -192,11 +193,16 @@ extension AddChatViewController: UISearchResultsUpdating, UISearchBarDelegate {
                 }
             }
         }
-        collectionView.reloadData()
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+        
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        collectionView.reloadData()
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
 }
 

@@ -20,22 +20,25 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .white
+//        view.backgroundColor = ColorConstants.viewBackground
         checkUserLogin()
         
     }
     
-    let profileButton = CustomButton(title: "Profile", color: .white, textColor: ColorConstants.tealGreen, font: FontConstants.bold1, cornerRadius: 0)
-    let logoutButton = CustomButton(title: "Logout", color: .white, textColor: ColorConstants.tealGreen, font: FontConstants.bold1, cornerRadius: 0)
+    override func viewDidAppear(_ animated: Bool) {
+        addButton.isEnabled = true
+    }
+    
+    let profileButton = CustomButton(title: "Profile", color: .clear, textColor: ColorConstants.titleText, font: FontConstants.bold1, cornerRadius: 0)
+    let logoutButton = CustomButton(title: "Logout", color: .clear, textColor: ColorConstants.titleText, font: FontConstants.bold1, cornerRadius: 0)
     
     let addButton: UIButton = {
         let button = UIButton()
         button.setImage(ImageConstants.add, for: .normal)
-        button.backgroundColor = ColorConstants.tealGreen
-        button.tintColor = ColorConstants.white
+        button.backgroundColor = ColorConstants.lightGreen
+        button.tintColor = ColorConstants.icon
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 30
-        
         return button
     }()
     
@@ -59,7 +62,8 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
             let loginVC = LoginViewController()
             loginVC.delegate = self
             
-            let navigation = UINavigationController(rootViewController: loginVC)
+            let navigation = CustomNavigationController(rootViewController: loginVC)
+//            let navigation = UINavigationController(rootViewController: loginVC)
             navigation.setNavigationBarHidden(true, animated: true)
             navigation.modalPresentationStyle = .fullScreen
             self.present(navigation, animated: true, completion: nil)
@@ -72,7 +76,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         //        dateFormatter.dateFormat = "dd/MM/YY hh:mm:a"
         dateFormatter.dateFormat = "hh:mm:a"
         
-        NetworkManager.shared.fetchUser(uid: NetworkManager.shared.getUID()!) { currentUser in
+        NetworkManager.shared.fetchUser() { currentUser in
             self.currentUser = currentUser
         }
         NetworkManager.shared.fetchChats(uid: NetworkManager.shared.getUID()!) { chats in
@@ -91,9 +95,9 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         
         navigationItem.rightBarButtonItems = [menu]
         
-        let edit = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(handleEdit))
+//        let edit = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(handleEdit))
         
-        navigationItem.leftBarButtonItems = [edit]
+//        navigationItem.leftBarButtonItems = [edit]
         
         view.addSubview(addButton)
         view.bringSubviewToFront(addButton)
@@ -109,11 +113,11 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
     
     func configureCollectionView() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: UICollectionViewFlowLayout())
-        
         view.addSubview(collectionView)
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(UserCell.self, forCellWithReuseIdentifier: cellIdentifier)
+        collectionView.backgroundColor = ColorConstants.viewBackground
     }
     
     func configureSideMenu() {
@@ -129,12 +133,12 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         menuStack.axis = .vertical
         menuStack.distribution = .fillEqually
         menuStack.alignment = .leading
-        menuView.backgroundColor = .white
+        menuView.backgroundColor = ColorConstants.popupView
         
-        menuView.layer.shadowColor = ColorConstants.darkTealGreen.cgColor
-        menuView.layer.shadowRadius = 15
-        menuView.layer.shadowOpacity = 0.9
-        menuView.layer.shadowOffset.height = 5
+//        menuView.layer.shadowColor = ColorConstants.darkTealGreen.cgColor
+//        menuView.layer.shadowRadius = 15
+//        menuView.layer.shadowOpacity = 0.9
+//        menuView.layer.shadowOffset.height = 5
         menuView.layer.cornerRadius = 10
         
         menuView.translatesAutoresizingMaskIntoConstraints = false
@@ -167,18 +171,24 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         }
     }
     
-    @objc func handleEdit() {
-        editMode = !editMode
-        initialFetch  = true
-        collectionView.reloadData()
-        
-    }
+//    @objc func handleEdit() {
+//        editMode = !editMode
+//        initialFetch  = true
+//        collectionView.reloadData()
+//        
+//    }
     
     @objc func handleAdd() {
-        let addVC = AddChatViewController()
-        addVC.currentUser = currentUser
-        addVC.chats = chats
-        navigationController?.pushViewController(addVC, animated: true)
+        addButton.pulseEffect()
+        addButton.isEnabled = false
+        let delayTime = DispatchTime.now() + 1.5
+        DispatchQueue.main.asyncAfter(deadline: delayTime) { [self] in
+            let addVC = AddChatViewController()
+            addVC.currentUser = currentUser
+            addVC.chats = chats
+            navigationController?.pushViewController(addVC, animated: true)
+        }
+       
     }
     
     @objc func navigateProfileVC() {
@@ -230,9 +240,11 @@ extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! UserCell
         
+        cell.profileImage.image = ImageConstants.person
         let chat = chats[indexPath.row]
         cell.chat = chat
-        cell.animateView(open: editMode)
+        cell.backgroundColor = ColorConstants.viewBackground
+//        cell.animateView(open: editMode)
         return cell
     }
     
@@ -251,7 +263,7 @@ extension HomeViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 1
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {

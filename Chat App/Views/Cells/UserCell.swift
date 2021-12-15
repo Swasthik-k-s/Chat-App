@@ -32,28 +32,28 @@ class UserCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    var select:Bool = false
+//    var select:Bool = false
     
     var normalView = UIView()
     var editView = UIView()
     var messageView = UIView()
     
-    var nameLabel = CustomLabel(text: "", color: .black, font: FontConstants.bold3)
-    var messageLabel = CustomLabel(text: "", color: ColorConstants.grey, font: FontConstants.normal1)
-    var dateLabel = CustomLabel(text: "", color: ColorConstants.grey, font: FontConstants.small)
+    var nameLabel = CustomLabel(text: "", color: ColorConstants.titleText, font: FontConstants.bold3)
+    var messageLabel = CustomLabel(text: "", color: ColorConstants.labelText, font: FontConstants.normal1)
+    var dateLabel = CustomLabel(text: "", color: ColorConstants.labelText, font: FontConstants.small)
     
     var profileImage = CustomImageView(image: UIImage(systemName: "person.fill")!, height: 50, width: 50, cornerRadius: 25, color: ColorConstants.customWhite)
     
-    var selectButton: UIButton = {
-        let button = UIButton()
-        button.setImage(ImageConstants.round, for: .normal)
-        button.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        button.tintColor = ColorConstants.tealGreen
-        button.addTarget(self, action: #selector(handleSelect), for: .touchUpInside)
-        
-        return button
-    }()
+//    var selectButton: UIButton = {
+//        let button = UIButton()
+//        button.setImage(ImageConstants.round, for: .normal)
+//        button.widthAnchor.constraint(equalToConstant: 50).isActive = true
+//        button.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//        button.tintColor = ColorConstants.tealGreen
+//        button.addTarget(self, action: #selector(handleSelect), for: .touchUpInside)
+//
+//        return button
+//    }()
     
     lazy var infoStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [nameLabel, messageView])
@@ -103,27 +103,27 @@ class UserCell: UICollectionViewCell {
         }
     }
     
-    func animateView(open: Bool) {
-        if open {
-            selectButton.isHidden = false
-            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-                self.frame.origin.x = 30
-            }, completion: nil)
-        } else {
-            selectButton.isHidden = true
-            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
-                self.frame.origin.x = 0
-            },completion: nil)
-        }
-    }
+//    func animateView(open: Bool) {
+//        if open {
+//            selectButton.isHidden = false
+//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
+//                self.frame.origin.x = 30
+//            }, completion: nil)
+//        } else {
+//            selectButton.isHidden = true
+//            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut, animations: {
+//                self.frame.origin.x = 0
+//            },completion: nil)
+//        }
+//    }
     
-    func selected(isSelect: Bool) {
-        if isSelect {
-            selectButton.setImage(ImageConstants.roundFill, for: .normal)
-        } else {
-            selectButton.setImage(ImageConstants.round, for: .normal)
-        }
-    }
+//    func selected(isSelect: Bool) {
+//        if isSelect {
+//            selectButton.setImage(ImageConstants.roundFill, for: .normal)
+//        } else {
+//            selectButton.setImage(ImageConstants.round, for: .normal)
+//        }
+//    }
     
     @objc func selectChat() {
         print("Clicked")
@@ -141,7 +141,6 @@ class UserCell: UICollectionViewCell {
     }
     
     func configureCell() {
-        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectChat))
         editView.addGestureRecognizer(tapGesture)
         
@@ -152,7 +151,7 @@ class UserCell: UICollectionViewCell {
         profileImage.clipsToBounds = true
         
         addSubview(messageView)
-        addSubview(selectButton)
+//        addSubview(selectButton)
         addSubview(profileImage)
         addSubview(infoStack)
         addSubview(dateLabel)
@@ -162,7 +161,7 @@ class UserCell: UICollectionViewCell {
         messageLabel.textAlignment = .left
         messageLabel.widthAnchor.constraint(equalTo: infoStack.widthAnchor).isActive = true
         
-        selectButton.translatesAutoresizingMaskIntoConstraints = false
+//        selectButton.translatesAutoresizingMaskIntoConstraints = false
         messageView.translatesAutoresizingMaskIntoConstraints = false
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         profileImage.translatesAutoresizingMaskIntoConstraints = false
@@ -171,10 +170,10 @@ class UserCell: UICollectionViewCell {
         
         NSLayoutConstraint.activate([
             
-            selectButton.leftAnchor.constraint(equalTo: self.leftAnchor, constant: -20),
-            selectButton.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+//            selectButton.leftAnchor.constraint(equalTo: self.leftAnchor, constant: -20),
+//            selectButton.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             
-            profileImage.leftAnchor.constraint(equalTo: selectButton.rightAnchor, constant: 0),
+            profileImage.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10),
             profileImage.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             
             infoStack.centerYAnchor.constraint(equalTo: self.centerYAnchor),
@@ -186,14 +185,14 @@ class UserCell: UICollectionViewCell {
             
         ])
     }
-    @objc func handleSelect(sender: UIButton) {
-        select = !select
-        delegate?.chatSelected(isSelected: select)
-        if select {
-            selectButton.setImage(ImageConstants.roundFill, for: .normal)
-        } else {
-            selectButton.setImage(ImageConstants.round, for: .normal)
-        }
-    }
+//    @objc func handleSelect(sender: UIButton) {
+//        select = !select
+//        delegate?.chatSelected(isSelected: select)
+//        if select {
+//            selectButton.setImage(ImageConstants.roundFill, for: .normal)
+//        } else {
+//            selectButton.setImage(ImageConstants.round, for: .normal)
+//        }
+//    }
     
 }

@@ -13,40 +13,40 @@ class SignUpViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorConstants.viewBackground
         
         configureUI()
         configureNotificationObserver()
         
     }
     
-    let profileImage = CustomImageView(image: ImageConstants.person!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.tealGreen)
-    let appLabel = CustomLabel(text: "Welcome to Chat App", color: ColorConstants.tealGreen, font: FontConstants.bold3)
+    let profileImage = CustomImageView(image: ImageConstants.person!, height: 100, width: 100, cornerRadius: 50, color: ColorConstants.green)
+    let appLabel = CustomLabel(text: "Welcome to Chat App", color: ColorConstants.green, font: FontConstants.bold3)
     
-    let bottomText = CustomLabel(text: "Already have an Account?", color: ColorConstants.tealGreen, font: FontConstants.normal1)
-    let loginButton = CustomButton(title: "Login", color: .clear, textColor: ColorConstants.darkTealGreen, font: FontConstants.bold2, cornerRadius: 0)
+    let bottomText = CustomLabel(text: "Already have an Account?", color: ColorConstants.green, font: FontConstants.normal1)
+    let loginButton = CustomButton(title: "Login", color: .clear, textColor: ColorConstants.green, font: FontConstants.bold2, cornerRadius: 0)
     
-    let usernameTextField = CustomTextField(placeholder: "User Name", color: ColorConstants.tealGreen)
-    let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.tealGreen)
-    let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.tealGreen)
+    let usernameTextField = CustomTextField(placeholder: "User Name", color: ColorConstants.titleText)
+    let emailTextField = CustomTextField(placeholder: "Email Address", color: ColorConstants.titleText)
+    let passwordTextField = CustomTextField(placeholder: "Password", color: ColorConstants.titleText)
     
     lazy var usernameContainer: InputFieldView = {
         usernameTextField.keyboardType = .default
-        return InputFieldView(image: ImageConstants.person!, color: ColorConstants.tealGreen, textField: usernameTextField)
+        return InputFieldView(image: ImageConstants.person!, color: ColorConstants.green, textField: usernameTextField)
     }()
     
     lazy var emailContainer: InputFieldView = {
         emailTextField.keyboardType = .emailAddress
-        return InputFieldView(image: ImageConstants.mail!, color: ColorConstants.tealGreen, textField: emailTextField)
+        return InputFieldView(image: ImageConstants.mail!, color: ColorConstants.green, textField: emailTextField)
     }()
     
     lazy var passwordContainer: InputFieldView = {
         passwordTextField.isSecureTextEntry = true
         passwordTextField.keyboardType = .default
-        return InputFieldView(image: ImageConstants.password!, color: ColorConstants.tealGreen, textField: passwordTextField)
+        return InputFieldView(image: ImageConstants.password!, color: ColorConstants.green, textField: passwordTextField)
     }()
     
-    let signUpButton = CustomButton(title: "Sign Up", color: ColorConstants.darkTealGreen, textColor: .white, font: FontConstants.bold1, cornerRadius: 25)
+    let signUpButton = CustomButton(title: "Sign Up", color: ColorConstants.green, textColor: ColorConstants.icon, font: FontConstants.bold1, cornerRadius: 25)
     
     let scrollView = UIScrollView()
     
@@ -62,14 +62,21 @@ class SignUpViewController: UIViewController {
         let fieldError = validateSignUp(profilePic: profilePic, username: username, email: email, password: password)
         
         if fieldError != nil {
-            showAlert(title: "Invalid", message: fieldError!)
+            let action = {
+                self.showAlert(title: "Invalid", message: fieldError!)
+            }
+            signUpButton.buttonAnimation(effectType: "shake", delay: 1.0, action: action)
         } else {
             
             NetworkManager.shared.signup(withEmail: email, password: password) { [weak self] result, error in
                 guard let self = self else { return }
                 
                 if error != nil {
-                    self.showAlert(title: "Failed", message: error!.localizedDescription)
+                    let action = {
+                        self.showAlert(title: "Failed", message: error!.localizedDescription)
+                    }
+                    self.signUpButton.buttonAnimation(effectType: "shake", delay: 1.0, action: action)
+                    
                     return
                 }
                 
@@ -83,8 +90,12 @@ class SignUpViewController: UIViewController {
                     
                     let newUser = UserData(username: username, email: email, profileURL: path, uid: uid)
                     NetworkManager.shared.addUser(user: newUser)
-                    self.delegate?.userAuthenticated()
-                    self.dismiss(animated: true)
+                    let action = {
+                        self.delegate?.userAuthenticated()
+                        self.dismiss(animated: true)
+                    }
+                    self.signUpButton.buttonAnimation(effectType: "flash", delay: 2.0, action: action)
+                    
                 }
             }
         }
@@ -104,15 +115,15 @@ class SignUpViewController: UIViewController {
     
     @objc func textDidChange(sender: UITextField) {
         if sender == usernameTextField {
-            usernameContainer.layer.borderColor = usernameValidation(username: usernameTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            usernameContainer.layer.borderColor = usernameValidation(username: usernameTextField.text!) ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
         
         if sender == emailTextField {
-            emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            emailContainer.layer.borderColor = emailValidation(email: emailTextField.text!) ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
         
         if sender == passwordTextField {
-            passwordContainer.layer.borderColor = passwordValidation(password: passwordTextField.text!) ? ColorConstants.tealGreen.cgColor : ColorConstants.customRed.cgColor
+            passwordContainer.layer.borderColor = passwordValidation(password: passwordTextField.text!) ? ColorConstants.green.cgColor : ColorConstants.customRed.cgColor
         }
     }
     
@@ -213,7 +224,7 @@ extension SignUpViewController: UIImagePickerControllerDelegate, UINavigationCon
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let imageSelected = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             profileImage.image = imageSelected
-            profileImage.layer.borderColor = ColorConstants.tealGreen.cgColor
+            profileImage.layer.borderColor = ColorConstants.green.cgColor
         }
         
         dismiss(animated: true, completion: nil)
